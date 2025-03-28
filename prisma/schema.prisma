@@ -8,7 +8,6 @@ generator client {
 datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
-    
 }
 
 model Post {
@@ -19,3 +18,221 @@ model Post {
 
     @@index([name])
 }
+
+model User {
+    id                String           @id @default(cuid())
+    name              String
+    swot              Swot? // one to one
+    savedQuestions    SavedQuestion[]
+    papers            Paper[]
+    friends           User[]           @relation("Friendship")
+    friendOf          User[]           @relation("Friendship")
+    sentRequests      FriendRequest[]  @relation("FriendRequestSender")
+    receivedRequests  FriendRequest[]  @relation("FriendRequestReceiver")
+    creditPoints      Int?             @default(0)
+    leaderBoardPoints Int?             @default(0)
+    PaperAnalytics    PaperAnalytics[]
+    @@index([name])
+}
+
+
+
+model FriendRequest {
+    id        String @id @default(cuid())
+    senderId  String
+    receiverId String
+    status     Boolean? @default(false)
+    sender    User   @relation("FriendRequestSender", fields: [senderId], references: [id])
+    receiver  User   @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
+    @@index([senderId])
+    @@index([receiverId])
+}
+
+model Swot {
+    id            String @id @default(cuid())
+    strengths     String
+    weaknesses    String
+    opportunities String
+    threats       String
+    userid        String @unique
+    user          User   @relation(fields: [userid], references: [id])
+    @@index([userid])
+}
+
+model SavedQuestion {
+    id        String    @id @default(cuid())
+    questions Question?
+    user      User[]
+    updatedAt DateTime  @updatedAt
+}
+
+model Question {
+    id               String              @id @default(cuid())
+    question         String
+    weightage        Int                 @default(4)
+    negativeMarking  Int                 @default(-1)
+    examId           String?
+    diagramUrl       DiagramUrl[]
+    subject          Subjects[]
+    difficulty       DifficultyLevel     @default(Medium)
+    explanation      String?
+    questionAnalytic QuestionAnalytics[]
+    topic            Topic[]
+    options          Options[]
+    sectionId        String?
+    section          Section?            @relation(fields: [sectionId], references: [id])
+    savedQuestionId  String?             @unique
+    savedQuestion    SavedQuestion?      @relation(fields: [savedQuestionId], references: [id])
+    practice         Practice[]
+    createdAt        DateTime            @default(now())
+    updatedAt        DateTime            @updatedAt
+    @@index([sectionId])
+    @@index([examId])
+    @@index([question])
+}
+
+model QuestionAnalytics {
+    id                        String   @id @default(cuid())
+    question                  Question @relation(fields: [questionId], references: [id])
+    questionId                String
+    timeTakenToSolveInMinutes Int
+    @@index([questionId])
+    @@index([timeTakenToSolveInMinutes])
+}
+
+enum DifficultyLevel {
+    Easy
+    Medium
+    Hard
+}
+
+model DiagramUrl {
+    id         String   @id @default(cuid())
+    url        String
+    question   Question @relation(fields: [questionId], references: [id])
+    questionId String
+    @@index([questionId])
+}
+
+model Topic {
+    id                String             @id @default(cuid())
+    name              String
+    question          Question[]
+    practice          Practice[]
+    topicWiseAccuracy topicWiseAccuracy?
+
+    @@index([name])
+}
+
+model Options {
+    id         Int      @id @default(autoincrement())
+    option     String
+    isCorrect  Boolean  @default(false)
+    question   Question @relation(fields: [questionId], references: [id])
+    questionId String
+    @@index([questionId])
+}
+
+model Exams {
+    id                String     @id @default(cuid())
+    name              String
+    date              DateTime
+    durationInMinutes Int
+    subjects          Subjects[]
+    totalMarks        Int
+    createdAt         DateTime   @default(now())
+    updatedAt         DateTime   @updatedAt
+    aiGeneratedPaper  Paper[]
+
+    @@index([name])
+    @@index([date])
+}
+
+model Section {
+    id                  String                @id @default(cuid())
+    name                String
+    questions           Question[]
+    paperId             String
+    paper               Paper                 @relation(fields: [paperId], references: [id])
+    sectionDemographics SectionDemographics[]
+    @@index([paperId])
+}
+
+model SectionDemographics {
+    id                        String   @id @default(cuid())
+    timeTakenToSolveInMinutes Int
+    isCorrect                 Boolean?
+    isAttempted               Boolean?
+    isMarkedForReview         Boolean?
+    isGuessed                 Boolean?
+    sectionId                 String
+    section                   Section  @relation(fields: [sectionId], references: [id])
+    @@index([sectionId])
+}
+
+model Subjects {
+    id       String     @id @default(cuid())
+    name     String
+    exams    Exams[]
+    question Question[]
+    practice Practice[]
+    @@index([name])
+}
+
+model Paper {
+    id                    String          @id @default(cuid())
+    name                  String
+    userId                String
+    user                  User            @relation(fields: [userId], references: [id])
+    timeDurationInMinutes Int
+    section               Section[]
+    paperAnalytics        PaperAnalytics?
+    examId                String
+    exam                  Exams           @relation(fields: [examId], references: [id])
+    createdAt             DateTime        @default(now())
+    updatedAt             DateTime        @updatedAt
+    @@index([userId])
+    @@index([examId])
+    @@index([createdAt])
+    @@index([updatedAt])
+    @@index([name])
+}
+
+model PaperAnalytics {
+    id                       String   @id @default(cuid())
+    paperId                  String   @unique
+    paper                    Paper    @relation(fields: [paperId], references: [id])
+    userId                   String
+    user                     User     @relation(fields: [userId], references: [id])
+    createdAt                DateTime @default(now())
+    updatedAt                DateTime @updatedAt
+    timeTakenInMinutes       Int
+    marksObtained            Int
+    totalMarks               Int
+    correctAnswers           Int
+    incorrectAnswers         Int
+    solvedQuestions          Int
+    unattemptedQuestions     Int
+    accuracyPercentage       Float
+    timePerQuestionInSeconds Float
+    @@index([userId])
+    @@index([paperId])
+}
+
+model Practice {
+    id       String     @id @default(cuid())
+    subjects Subjects[]
+    topic    Topic[]
+    question Question[]
+}
+
+model topicWiseAccuracy {
+    topic                Topic  @relation(fields: [topicId], references: [id])
+    topicId              String @unique
+    noOfCorrectQuestions Int
+    totalQuestions       Int
+    @@index([topicId])
+}
+
+
+
