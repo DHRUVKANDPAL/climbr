@@ -172,27 +172,27 @@ export const postRouter = createTRPCRouter({
       //   ],
       // };
 
-     const questions = await Promise.allSettled(
-       examDetails?.section
-         ? examDetails.section.flatMap((section) => {
-             return examDetails?.subjects?.map(async (subject) => {
-               return await generateQuestions(
-                 section.numberOfQuestions,
-                 subject.name,
-                 input.examName,
-                 section.type,
-               );
-             });
-           })
-         : [],
-     );
+      const questions = await Promise.allSettled(
+        examDetails?.section
+          ? examDetails.section.flatMap((section) => {
+              return examDetails?.subjects?.map(async (subject) => {
+                return await generateQuestions(
+                  section.numberOfQuestions,
+                  subject.name,
+                  input.examName,
+                  section.type,
+                );
+              });
+            })
+          : [],
+      );
 
       console.log("questions", questions);
-    //  const fulfilledQuestions = questions
-    //    .filter((result) => result.status === "fulfilled")
-    //    .map((result) => result.value);
+      //  const fulfilledQuestions = questions
+      //    .filter((result) => result.status === "fulfilled")
+      //    .map((result) => result.value);
 
-    //  console.log("Fulfilled Questions:", fulfilledQuestions);
+      //  console.log("Fulfilled Questions:", fulfilledQuestions);
       const paper = await ctx.db.paper.create({
         data: {
           name: input.name,
@@ -229,7 +229,7 @@ export const postRouter = createTRPCRouter({
           },
         },
       });
-      
+
       return paper;
     }),
 });
