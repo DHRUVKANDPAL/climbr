@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import MarkdownQuestionDisplay from "@/components/MarkdownQuestionDisplay";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Clock,
@@ -73,32 +75,203 @@ type QuestionPaperSection = {
 };
 
 // Sample data
+// Sample question data with markdown formatting
 const generateSampleData = (): QuestionPaperSection[] => {
   const sections = ["Physics", "Chemistry", "Mathematics"];
   const questionPaper: QuestionPaperSection[] = [];
 
-  sections.forEach((sectionName, sectionIndex) => {
-    const questions: Question[] = [];
-    for (let i = 1; i <= 30; i++) {
-      questions.push({
-        id: sectionIndex * 30 + i,
-        text: `${sectionName} Question ${i}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam vehicula magna quis tortor rhoncus, non dictum lectus consectetur?`,
-        options: [
-          "Option A: Lorem ipsum dolor sit amet",
-          "Option B: Consectetur adipiscing elit",
-          "Option C: Nullam vehicula magna quis",
-          "Option D: Non dictum lectus consectetur",
-        ],
-        section: sectionName,
-        status: i === 1 ? "not-answered" : "not-visited",
-        timeSpent: 0,
-      });
-    }
+  // Physics Questions
+  const physicsQuestions: Question[] = [
+    {
+      id: 1,
+      text: "A ball is thrown horizontally from the top of a building with an initial velocity of $10 \\text{ m/s}$. If the height of the building is $45 \\text{ m}$, how far from the base of the building will the ball strike the ground? (Take $g = 10 \\text{ m/s}^2$)",
+      options: [
+        "A) $10 \\text{ m}$",
+        "B) $20 \\text{ m}$",
+        "C) $30 \\text{ m}$",
+        "D) $40 \\text{ m}$",
+      ],
+      section: "Physics",
+      status: "not-answered",
+      timeSpent: 0,
+    },
+    {
+      id: 2,
+      text: "The gravitational force between two masses $m_1$ and $m_2$ separated by a distance $r$ is given by $F = G\\frac{m_1 m_2}{r^2}$. If the masses are doubled and the distance between them is halved, the new force will be:",
+      options: [
+        "A) The same as before",
+        "B) 4 times the original force",
+        "C) 8 times the original force",
+        "D) 16 times the original force",
+      ],
+      section: "Physics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 3,
+      text: "According to Faraday's law of electromagnetic induction, the induced emf in a coil is directly proportional to:",
+      options: [
+        "A) The rate of change of magnetic field",
+        "B) The strength of the magnetic field only",
+        "C) The area of the coil only",
+        "D) The resistance of the coil",
+      ],
+      section: "Physics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+  ];
 
-    questionPaper.push({
-      name: sectionName,
-      questions,
+  // Add more physics questions
+  for (let i = 4; i <= 30; i++) {
+    physicsQuestions.push({
+      id: i,
+      text: `This is physics question number ${i} with some **bold text** and *italics*. It might include an equation like $E = mc^2$ or a list:\n\n- Item 1\n- Item 2\n- Item 3`,
+      options: [
+        `A) Option with $\\sqrt{x^2 + y^2}$`,
+        `B) Option with **strong emphasis**`,
+        `C) Option with *italics emphasis*`,
+        `D) Regular option ${i}`,
+      ],
+      section: "Physics",
+      status: "not-visited",
+      timeSpent: 0,
     });
+  }
+
+  // Chemistry Questions
+  const chemistryQuestions: Question[] = [
+    {
+      id: 31,
+      text: "Which of the following elements has the highest electronegativity?\n\n| Element | Symbol | Atomic Number |\n|---------|--------|---------------|\n| Fluorine | F | 9 |\n| Chlorine | Cl | 17 |\n| Oxygen | O | 8 |\n| Nitrogen | N | 7 |",
+      options: ["A) Fluorine", "B) Chlorine", "C) Oxygen", "D) Nitrogen"],
+      section: "Chemistry",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 32,
+      text: "Which of the following molecules has a non-zero dipole moment?\n\n```\nH  H\n \\/\n  C\n / \\\nH   H\n```",
+      options: [
+        "A) CH₄ (Methane)",
+        "B) CCl₄ (Carbon tetrachloride)",
+        "C) CHCl₃ (Chloroform)",
+        "D) CO₂ (Carbon dioxide)",
+      ],
+      section: "Chemistry",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 33,
+      text: "The equation $\\Delta G = \\Delta H - T\\Delta S$ represents which of the following thermodynamic principles?",
+      options: [
+        "A) First law of thermodynamics",
+        "B) Second law of thermodynamics",
+        "C) Gibbs free energy change",
+        "D) Enthalpy change",
+      ],
+      section: "Chemistry",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+  ];
+
+  // Add more chemistry questions
+  for (let i = 34; i <= 60; i++) {
+    chemistryQuestions.push({
+      id: i,
+      text: `# Chemistry Question ${i}\n\n> This is chemistry question ${i} with a blockquote and some molecular formulas like H₂O and C₆H₁₂O₆.\n\nDoes the reaction of $\\text{A} + \\text{B} \\rightarrow \\text{C}$ follow first-order kinetics?`,
+      options: [
+        `A) Yes, with rate = k[A]`,
+        `B) Yes, with rate = k[A][B]`,
+        `C) No, it's zero-order`,
+        `D) Cannot be determined`,
+      ],
+      section: "Chemistry",
+      status: "not-visited",
+      timeSpent: 0,
+    });
+  }
+
+  // Mathematics Questions
+  const mathQuestions: Question[] = [
+    {
+      id: 61,
+      text: "Evaluate the following integral:\n\n$$\\int_{0}^{\\pi} \\sin^2(x) dx$$",
+      options: [
+        "A) $\\frac{\\pi}{4}$",
+        "B) $\\frac{\\pi}{2}$",
+        "C) $\\pi$",
+        "D) $2\\pi$",
+      ],
+      section: "Mathematics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 62,
+      text: "If $z = 2 + 3i$ and $w = 1 - 2i$, then the value of $\\frac{z}{w}$ is:",
+      options: [
+        "A) $-\\frac{1}{5} + \\frac{8}{5}i$",
+        "B) $\\frac{4}{5} + \\frac{7}{5}i$",
+        "C) $-\\frac{4}{5} + \\frac{7}{5}i$",
+        "D) $\\frac{1}{5} + \\frac{8}{5}i$",
+      ],
+      section: "Mathematics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 63,
+      text: "A bag contains 4 red balls and 6 blue balls. If 2 balls are drawn at random without replacement, the probability of getting exactly one red ball is:",
+      options: [
+        "A) $\\frac{4}{15}$",
+        "B) $\\frac{8}{15}$",
+        "C) $\\frac{12}{45}$",
+        "D) $\\frac{24}{45}$",
+      ],
+      section: "Mathematics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+  ];
+
+  // Add more math questions
+  for (let i = 64; i <= 90; i++) {
+    mathQuestions.push({
+      id: i,
+      text: `# Mathematics Question ${i}\n\nConsider the following equation:\n\n$$f(x) = \\begin{cases} 
+      x^2 & \\text{if } x \\leq 0 \\\\
+      2x + 1 & \\text{if } x > 0
+   \\end{cases}$$\n\nIs this function continuous at x = 0?`,
+      options: [
+        `A) Yes, because $\\lim_{x \\to 0^-} f(x) = \\lim_{x \\to 0^+} f(x) = f(0)$`,
+        `B) No, because $\\lim_{x \\to 0^-} f(x) \\neq \\lim_{x \\to 0^+} f(x)$`,
+        `C) No, because $f(0)$ is undefined`,
+        `D) Yes, because the domain of $f$ includes $x = 0$`,
+      ],
+      section: "Mathematics",
+      status: "not-visited",
+      timeSpent: 0,
+    });
+  }
+
+  // Assemble the question paper
+  questionPaper.push({
+    name: "Physics",
+    questions: physicsQuestions,
+  });
+
+  questionPaper.push({
+    name: "Chemistry",
+    questions: chemistryQuestions,
+  });
+
+  questionPaper.push({
+    name: "Mathematics",
+    questions: mathQuestions,
   });
 
   return questionPaper;
@@ -641,39 +814,10 @@ const ExamInterface = () => {
                   </div>
                 </div>
 
-                <Card className="mb-4 flex-1 border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                  <CardContent className="pt-6">
-                    <ScrollArea className="h-[calc(100vh-320px)] pr-4">
-                      <p className="mb-6 text-lg leading-relaxed">
-                        {currentQuestion.text}
-                      </p>
-                      <div className="space-y-4">
-                        {currentQuestion.options.map((option, index) => (
-                          <div
-                            key={index}
-                            className={`flex cursor-pointer items-start rounded-md border p-4 transition-colors ${
-                              currentQuestion.selectedOption === index
-                                ? "border-blue-500 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/20"
-                                : "border-zinc-200 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/50"
-                            }`}
-                            onClick={() => selectOption(index)}
-                          >
-                            <div
-                              className={`mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border ${
-                                currentQuestion.selectedOption === index
-                                  ? "border-blue-500 bg-blue-500 text-white dark:border-blue-600 dark:bg-blue-600"
-                                  : "border-zinc-400 dark:border-zinc-600"
-                              }`}
-                            >
-                              {String.fromCharCode(65 + index)}
-                            </div>
-                            <span className="pt-0.5">{option}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+                <MarkdownQuestionDisplay
+                  question={currentQuestion}
+                  onSelectOption={selectOption}
+                />
 
                 <div className="flex flex-wrap justify-between gap-2">
                   <div className="flex gap-2">
@@ -822,7 +966,7 @@ const ExamInterface = () => {
             </div>
 
             {/* Slim progress bar */}
-            <div className="mt-2">
+            {/* <div className="mt-2">
               <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-in-out"
@@ -831,7 +975,7 @@ const ExamInterface = () => {
                   }}
                 ></div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Question Palette - Modern Redesign */}
