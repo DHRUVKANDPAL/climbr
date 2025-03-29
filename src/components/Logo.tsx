@@ -5,10 +5,10 @@ const Logo = () => {
   return (
     <div
       className={cn(
-        "text-3xl font-semibold text-violet-600 dark:text-violet-400",
+        "text-3xl font-semibold text-indigo-600 dark:text-indigo-400",
       )}
     >
-      Climb<span className="font-semibold text-violet-700">R</span>
+      Climb<span className="font-bold text-indigo-700">R</span>
     </div>
   );
 };

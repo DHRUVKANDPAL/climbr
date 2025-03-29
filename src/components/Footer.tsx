@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Send,
 } from "lucide-react";
+import Logo from "./Logo";
 
 export default function EnhancedFooter() {
   const currentYear = new Date().getFullYear();
@@ -69,9 +70,7 @@ export default function EnhancedFooter() {
         {/* Brand Section */}
         <div className="md:col-span-4 lg:col-span-3">
           <Link href="/" className="mb-4 flex items-center space-x-2">
-            <span className="text-3xl font-bold text-indigo-700 dark:text-zinc-100">
-              climb<span className="text-indigo-500">R</span>
-            </span>
+            <Logo/>
           </Link>
           <p className="mb-4 text-sm opacity-80">
             Empowering learners with AI-driven insights and transformative

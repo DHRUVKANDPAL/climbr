@@ -32,7 +32,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative flex min-h-[550px] w-full flex-col items-center justify-center overflow-hidden bg-indigo-50 px-4 text-center dark:bg-zinc-900">
+    <section id="hero" className="relative flex min-h-[550px] w-full flex-col items-center justify-center overflow-hidden bg-indigo-50 px-4 text-center dark:bg-zinc-900">
       {/* Animated Background */}
       <AnimatedGridPattern
         numSquares={40}

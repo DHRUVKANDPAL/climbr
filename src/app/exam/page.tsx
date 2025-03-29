@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import MarkdownQuestionDisplay from "@/components/MarkdownQuestionDisplay";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Clock,
@@ -25,6 +27,8 @@ import {
   ListChecks,
   ClipboardCheck,
   Circle,
+  Eraser,
+  Send,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -71,32 +75,203 @@ type QuestionPaperSection = {
 };
 
 // Sample data
+// Sample question data with markdown formatting
 const generateSampleData = (): QuestionPaperSection[] => {
   const sections = ["Physics", "Chemistry", "Mathematics"];
   const questionPaper: QuestionPaperSection[] = [];
 
-  sections.forEach((sectionName, sectionIndex) => {
-    const questions: Question[] = [];
-    for (let i = 1; i <= 30; i++) {
-      questions.push({
-        id: sectionIndex * 30 + i,
-        text: `${sectionName} Question ${i}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam vehicula magna quis tortor rhoncus, non dictum lectus consectetur?`,
-        options: [
-          "Option A: Lorem ipsum dolor sit amet",
-          "Option B: Consectetur adipiscing elit",
-          "Option C: Nullam vehicula magna quis",
-          "Option D: Non dictum lectus consectetur",
-        ],
-        section: sectionName,
-        status: i === 1 ? "not-answered" : "not-visited",
-        timeSpent: 0,
-      });
-    }
+  // Physics Questions
+  const physicsQuestions: Question[] = [
+    {
+      id: 1,
+      text: "A ball is thrown horizontally from the top of a building with an initial velocity of $10 \\text{ m/s}$. If the height of the building is $45 \\text{ m}$, how far from the base of the building will the ball strike the ground? (Take $g = 10 \\text{ m/s}^2$)",
+      options: [
+        "A) $10 \\text{ m}$",
+        "B) $20 \\text{ m}$",
+        "C) $30 \\text{ m}$",
+        "D) $40 \\text{ m}$",
+      ],
+      section: "Physics",
+      status: "not-answered",
+      timeSpent: 0,
+    },
+    {
+      id: 2,
+      text: "The gravitational force between two masses $m_1$ and $m_2$ separated by a distance $r$ is given by $F = G\\frac{m_1 m_2}{r^2}$. If the masses are doubled and the distance between them is halved, the new force will be:",
+      options: [
+        "A) The same as before",
+        "B) 4 times the original force",
+        "C) 8 times the original force",
+        "D) 16 times the original force",
+      ],
+      section: "Physics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 3,
+      text: "According to Faraday's law of electromagnetic induction, the induced emf in a coil is directly proportional to:",
+      options: [
+        "A) The rate of change of magnetic field",
+        "B) The strength of the magnetic field only",
+        "C) The area of the coil only",
+        "D) The resistance of the coil",
+      ],
+      section: "Physics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+  ];
 
-    questionPaper.push({
-      name: sectionName,
-      questions,
+  // Add more physics questions
+  for (let i = 4; i <= 30; i++) {
+    physicsQuestions.push({
+      id: i,
+      text: `This is physics question number ${i} with some **bold text** and *italics*. It might include an equation like $E = mc^2$ or a list:\n\n- Item 1\n- Item 2\n- Item 3`,
+      options: [
+        `A) Option with $\\sqrt{x^2 + y^2}$`,
+        `B) Option with **strong emphasis**`,
+        `C) Option with *italics emphasis*`,
+        `D) Regular option ${i}`,
+      ],
+      section: "Physics",
+      status: "not-visited",
+      timeSpent: 0,
     });
+  }
+
+  // Chemistry Questions
+  const chemistryQuestions: Question[] = [
+    {
+      id: 31,
+      text: "Which of the following elements has the highest electronegativity?\n\n| Element | Symbol | Atomic Number |\n|---------|--------|---------------|\n| Fluorine | F | 9 |\n| Chlorine | Cl | 17 |\n| Oxygen | O | 8 |\n| Nitrogen | N | 7 |",
+      options: ["A) Fluorine", "B) Chlorine", "C) Oxygen", "D) Nitrogen"],
+      section: "Chemistry",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 32,
+      text: "Which of the following molecules has a non-zero dipole moment?\n\n```\nH  H\n \\/\n  C\n / \\\nH   H\n```",
+      options: [
+        "A) CH₄ (Methane)",
+        "B) CCl₄ (Carbon tetrachloride)",
+        "C) CHCl₃ (Chloroform)",
+        "D) CO₂ (Carbon dioxide)",
+      ],
+      section: "Chemistry",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 33,
+      text: "The equation $\\Delta G = \\Delta H - T\\Delta S$ represents which of the following thermodynamic principles?",
+      options: [
+        "A) First law of thermodynamics",
+        "B) Second law of thermodynamics",
+        "C) Gibbs free energy change",
+        "D) Enthalpy change",
+      ],
+      section: "Chemistry",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+  ];
+
+  // Add more chemistry questions
+  for (let i = 34; i <= 60; i++) {
+    chemistryQuestions.push({
+      id: i,
+      text: `# Chemistry Question ${i}\n\n> This is chemistry question ${i} with a blockquote and some molecular formulas like H₂O and C₆H₁₂O₆.\n\nDoes the reaction of $\\text{A} + \\text{B} \\rightarrow \\text{C}$ follow first-order kinetics?`,
+      options: [
+        `A) Yes, with rate = k[A]`,
+        `B) Yes, with rate = k[A][B]`,
+        `C) No, it's zero-order`,
+        `D) Cannot be determined`,
+      ],
+      section: "Chemistry",
+      status: "not-visited",
+      timeSpent: 0,
+    });
+  }
+
+  // Mathematics Questions
+  const mathQuestions: Question[] = [
+    {
+      id: 61,
+      text: "Evaluate the following integral:\n\n$$\\int_{0}^{\\pi} \\sin^2(x) dx$$",
+      options: [
+        "A) $\\frac{\\pi}{4}$",
+        "B) $\\frac{\\pi}{2}$",
+        "C) $\\pi$",
+        "D) $2\\pi$",
+      ],
+      section: "Mathematics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 62,
+      text: "If $z = 2 + 3i$ and $w = 1 - 2i$, then the value of $\\frac{z}{w}$ is:",
+      options: [
+        "A) $-\\frac{1}{5} + \\frac{8}{5}i$",
+        "B) $\\frac{4}{5} + \\frac{7}{5}i$",
+        "C) $-\\frac{4}{5} + \\frac{7}{5}i$",
+        "D) $\\frac{1}{5} + \\frac{8}{5}i$",
+      ],
+      section: "Mathematics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+    {
+      id: 63,
+      text: "A bag contains 4 red balls and 6 blue balls. If 2 balls are drawn at random without replacement, the probability of getting exactly one red ball is:",
+      options: [
+        "A) $\\frac{4}{15}$",
+        "B) $\\frac{8}{15}$",
+        "C) $\\frac{12}{45}$",
+        "D) $\\frac{24}{45}$",
+      ],
+      section: "Mathematics",
+      status: "not-visited",
+      timeSpent: 0,
+    },
+  ];
+
+  // Add more math questions
+  for (let i = 64; i <= 90; i++) {
+    mathQuestions.push({
+      id: i,
+      text: `# Mathematics Question ${i}\n\nConsider the following equation:\n\n$$f(x) = \\begin{cases} 
+      x^2 & \\text{if } x \\leq 0 \\\\
+      2x + 1 & \\text{if } x > 0
+   \\end{cases}$$\n\nIs this function continuous at x = 0?`,
+      options: [
+        `A) Yes, because $\\lim_{x \\to 0^-} f(x) = \\lim_{x \\to 0^+} f(x) = f(0)$`,
+        `B) No, because $\\lim_{x \\to 0^-} f(x) \\neq \\lim_{x \\to 0^+} f(x)$`,
+        `C) No, because $f(0)$ is undefined`,
+        `D) Yes, because the domain of $f$ includes $x = 0$`,
+      ],
+      section: "Mathematics",
+      status: "not-visited",
+      timeSpent: 0,
+    });
+  }
+
+  // Assemble the question paper
+  questionPaper.push({
+    name: "Physics",
+    questions: physicsQuestions,
+  });
+
+  questionPaper.push({
+    name: "Chemistry",
+    questions: chemistryQuestions,
+  });
+
+  questionPaper.push({
+    name: "Mathematics",
+    questions: mathQuestions,
   });
 
   return questionPaper;
@@ -639,39 +814,10 @@ const ExamInterface = () => {
                   </div>
                 </div>
 
-                <Card className="mb-4 flex-1 border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                  <CardContent className="pt-6">
-                    <ScrollArea className="h-[calc(100vh-320px)] pr-4">
-                      <p className="mb-6 text-lg leading-relaxed">
-                        {currentQuestion.text}
-                      </p>
-                      <div className="space-y-4">
-                        {currentQuestion.options.map((option, index) => (
-                          <div
-                            key={index}
-                            className={`flex cursor-pointer items-start rounded-md border p-4 transition-colors ${
-                              currentQuestion.selectedOption === index
-                                ? "border-blue-500 bg-blue-50 dark:border-blue-600 dark:bg-blue-900/20"
-                                : "border-zinc-200 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/50"
-                            }`}
-                            onClick={() => selectOption(index)}
-                          >
-                            <div
-                              className={`mr-3 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border ${
-                                currentQuestion.selectedOption === index
-                                  ? "border-blue-500 bg-blue-500 text-white dark:border-blue-600 dark:bg-blue-600"
-                                  : "border-zinc-400 dark:border-zinc-600"
-                              }`}
-                            >
-                              {String.fromCharCode(65 + index)}
-                            </div>
-                            <span className="pt-0.5">{option}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+                <MarkdownQuestionDisplay
+                  question={currentQuestion}
+                  onSelectOption={selectOption}
+                />
 
                 <div className="flex flex-wrap justify-between gap-2">
                   <div className="flex gap-2">
@@ -750,82 +896,78 @@ const ExamInterface = () => {
 
         {/* Right Side - Question Palette and Status */}
         <div className="flex w-1/3 flex-col overflow-hidden border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-          {/* Status Section with modern styling */}
-          <div className="border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-5 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
-              <ClipboardCheck className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-              Test Summary
-            </h2>
+          {/* Compact Status Section */}
+          <div className="border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-3 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-1.5 text-base font-bold">
+                <ClipboardCheck className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                Test Summary
+              </h2>
 
-            {/* Redesigned stats cards */}
-            <div className="mb-6 grid grid-cols-3 gap-3">
-              <div className="flex flex-col rounded-lg bg-white p-3 shadow-sm dark:bg-zinc-800">
-                <div className="mb-1 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-green-500"></div>
+              {/* Progress Badge */}
+              <div className="flex items-center gap-2 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+                {Math.round(
+                  ((stats.answered +
+                    stats.guessed +
+                    stats.markedReviewAnswered) /
+                    stats.total) *
+                    100,
+                )}
+                % Complete
+              </div>
+            </div>
+
+            {/* Compact stat cards in a single row */}
+            <div className="mt-3 flex gap-2">
+              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     Answered
                   </span>
                 </div>
-                <span className="text-2xl font-semibold">{stats.answered}</span>
+                <span className="font-semibold">{stats.answered}</span>
               </div>
-              <div className="flex flex-col rounded-lg bg-white p-3 shadow-sm dark:bg-zinc-800">
-                <div className="mb-1 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-red-500"></div>
+              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-red-500"></div>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     Not Answered
                   </span>
                 </div>
-                <span className="text-2xl font-semibold">
-                  {stats.notAnswered}
-                </span>
+                <span className="font-semibold">{stats.notAnswered}</span>
               </div>
-              <div className="flex flex-col rounded-lg bg-white p-3 shadow-sm dark:bg-zinc-800">
-                <div className="mb-1 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-zinc-500"></div>
+              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-zinc-500"></div>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     Not Visited
                   </span>
                 </div>
-                <span className="text-2xl font-semibold">
-                  {stats.notVisited}
-                </span>
+                <span className="font-semibold">{stats.notVisited}</span>
               </div>
             </div>
 
-            {/* Additional stats with sleek badges */}
-            <div className="mb-6 flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm dark:bg-zinc-800">
-                <Flag className="h-4 w-4 text-purple-500" />
-                <span className="text-sm">{stats.markedReview} Marked</span>
+            {/* Mini status pills */}
+            <div className="mt-2 flex gap-2 overflow-x-auto pb-1 text-xs">
+              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                <Flag className="h-3 w-3 text-purple-500" />
+                <span>{stats.markedReview} Marked</span>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm dark:bg-zinc-800">
-                <HelpCircle className="h-4 w-4 text-blue-500" />
-                <span className="text-sm">
-                  {stats.markedReviewAnswered} Marked & Answered
-                </span>
+              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                <HelpCircle className="h-3 w-3 text-blue-500" />
+                <span>{stats.markedReviewAnswered} Marked & Answered</span>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm dark:bg-zinc-800">
-                <LightbulbIcon className="h-4 w-4 text-amber-500" />
-                <span className="text-sm">{stats.guessed} Guessed</span>
+              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                <LightbulbIcon className="h-3 w-3 text-amber-500" />
+                <span>{stats.guessed} Guessed</span>
               </div>
             </div>
 
-            {/* Enhanced progress indicator */}
-            <div className="mt-4">
-              <div className="mb-2 flex justify-between text-sm">
-                <span className="font-medium">Overall Progress</span>
-                <span className="font-bold text-blue-600 dark:text-blue-400">
-                  {Math.round(
-                    ((stats.answered +
-                      stats.guessed +
-                      stats.markedReviewAnswered) /
-                      stats.total) *
-                      100,
-                  )}
-                  %
-                </span>
-              </div>
-              <div className="relative h-3 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+            {/* Slim progress bar */}
+            {/* <div className="mt-2">
+              <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-in-out"
                   style={{
@@ -833,7 +975,7 @@ const ExamInterface = () => {
                   }}
                 ></div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Question Palette - Modern Redesign */}
@@ -844,17 +986,46 @@ const ExamInterface = () => {
               onValueChange={setCurrentSection}
               className="h-full"
             >
-              <div className="border-b border-zinc-200 p-4 dark:border-zinc-800">
-                <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
-                  <ListChecks className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-                  Question Palette
-                </h2>
-                <TabsList className="w-full rounded-lg bg-zinc-100 dark:bg-zinc-800">
+              <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-950">
+                <div className="mb-2 flex flex-col items-start gap-2">
+                  <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                    <ListChecks className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                    Question Palette
+                  </h2>
+                  <div className="mb-3 grid grid-cols-3 gap-x-2 gap-y-1 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-green-500"></div>
+                      <span>Answered</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-red-500"></div>
+                      <span>Not Answered</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-zinc-500"></div>
+                      <span>Not Visited</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-purple-500"></div>
+                      <span>Marked</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-yellow-500"></div>
+                      <span>Guessed</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-blue-500"></div>
+                      <span>Marked and answered</span>
+                    </div>
+                  </div>
+                </div>
+
+                <TabsList className="w-full rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-800">
                   {questionPaper.map((section) => (
                     <TabsTrigger
                       key={section.name}
                       value={section.name}
-                      className="flex-1 rounded-md py-2 transition-all data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-zinc-950"
+                      className="rounded-md py-1.5 text-xs transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-zinc-950"
                     >
                       {section.name}
                     </TabsTrigger>
@@ -868,40 +1039,22 @@ const ExamInterface = () => {
                   value={section.name}
                   className="m-0 h-full overflow-auto"
                 >
-                  <ScrollArea className="h-[calc(100vh-340px)]">
-                    <div className="p-4">
-                      {/* Legend for question statuses */}
-                      <div className="mb-4 flex flex-wrap gap-2 text-xs">
-                        <div className="flex items-center gap-1">
-                          <div className="h-3 w-3 rounded-sm bg-green-500"></div>
-                          <span>Answered</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="h-3 w-3 rounded-sm bg-red-500"></div>
-                          <span>Not Answered</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="h-3 w-3 rounded-sm bg-zinc-500"></div>
-                          <span>Not Visited</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="h-3 w-3 rounded-sm bg-purple-500"></div>
-                          <span>Marked</span>
-                        </div>
-                      </div>
+                  <ScrollArea className="h-[calc(100vh-280px)]">
+                    <div className="p-3">
+                      {/* Compact legend for question statuses */}
 
-                      {/* Modern question grid */}
-                      <div className="grid grid-cols-5 gap-3">
+                      {/* Modern question grid with hover effects */}
+                      <div className="grid grid-cols-5 gap-2">
                         {section.questions.map((question) => (
                           <TooltipProvider key={question.id}>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
-                                  className={`flex h-11 w-11 items-center justify-center rounded-lg font-medium shadow-sm transition-all hover:scale-105 ${getStatusColor(
+                                  className={`flex h-10 w-10 items-center justify-center rounded-lg font-medium shadow-sm transition-all hover:scale-105 hover:shadow ${getStatusColor(
                                     question.status,
                                   )} ${
                                     currentQuestionId === question.id
-                                      ? "ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-zinc-900"
+                                      ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-zinc-900"
                                       : ""
                                   }`}
                                   onClick={() => changeQuestion(question.id)}
@@ -911,23 +1064,22 @@ const ExamInterface = () => {
                               </TooltipTrigger>
                               <TooltipContent
                                 side="right"
-                                className="rounded-lg border border-zinc-200 bg-white p-3 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                                className="flex gap-2 rounded-lg border border-zinc-200 bg-white p-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
                               >
                                 <div className="text-sm">
                                   <div className="font-bold text-zinc-900 dark:text-zinc-100">
                                     Question {question.id}
                                   </div>
-                                  <div className="mt-1 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                    <Circle className="h-2 w-2 fill-current" />
-                                    Status:{" "}
+                                  <div className="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                    <Circle className="h-1.5 w-1.5 fill-current" />
                                     {question.status
                                       .replace(/-/g, " ")
                                       .replace(/\b\w/g, (l) => l.toUpperCase())}
                                   </div>
                                   {question.timeSpent > 0 && (
-                                    <div className="mt-1 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                      <Clock className="h-2 w-2" />
-                                      Time: {formatTime(question.timeSpent)}
+                                    <div className="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                      <Clock className="h-1.5 w-1.5" />
+                                      {formatTime(question.timeSpent)}
                                     </div>
                                   )}
                                 </div>
@@ -944,35 +1096,39 @@ const ExamInterface = () => {
           </div>
 
           {/* Question Navigation - Modernized */}
-          <div className="border-t border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-4 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
+          <div className="border-t border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-3 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
                 onClick={goToPrevQuestion}
                 disabled={currentQuestionId <= 1}
-                className="border-zinc-300 bg-white transition-all duration-200 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                size="sm"
+                className="border-zinc-300 bg-white px-3 transition-all hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Previous
+                <ArrowLeft className="mr-1 h-3 w-3" />
+                Prev
               </Button>
 
               <div className="flex items-center gap-2">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-100">
-                  {currentQuestionId}
-                </span>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                  of {stats.total}
-                </span>
+                <div className="flex items-center">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                    {currentQuestionId}
+                  </span>
+                  <span className="ml-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    of {stats.total}
+                  </span>
+                </div>
               </div>
 
               <Button
                 variant="outline"
                 onClick={goToNextQuestion}
                 disabled={currentQuestionId >= stats.total}
-                className="border-zinc-300 bg-white transition-all duration-200 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                size="sm"
+                className="border-zinc-300 bg-white px-3 transition-all hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
               >
                 Next
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-1 h-3 w-3" />
               </Button>
             </div>
           </div>
