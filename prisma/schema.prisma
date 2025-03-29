@@ -32,18 +32,18 @@ model User {
     creditPoints      Int?             @default(0)
     leaderBoardPoints Int?             @default(0)
     PaperAnalytics    PaperAnalytics[]
+
     @@index([name])
 }
 
-
-
 model FriendRequest {
-    id        String @id @default(cuid())
-    senderId  String
+    id         String   @id @default(cuid())
+    senderId   String
     receiverId String
     status     Boolean? @default(false)
-    sender    User   @relation("FriendRequestSender", fields: [senderId], references: [id])
-    receiver  User   @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
+    sender     User     @relation("FriendRequestSender", fields: [senderId], references: [id])
+    receiver   User     @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
+
     @@index([senderId])
     @@index([receiverId])
 }
@@ -56,6 +56,7 @@ model Swot {
     threats       String
     userid        String @unique
     user          User   @relation(fields: [userid], references: [id])
+
     @@index([userid])
 }
 
@@ -69,8 +70,6 @@ model SavedQuestion {
 model Question {
     id               String              @id @default(cuid())
     question         String
-    weightage        Int                 @default(4)
-    negativeMarking  Int                 @default(-1)
     examId           String?
     diagramUrl       DiagramUrl[]
     subject          Subjects[]
@@ -79,14 +78,15 @@ model Question {
     questionAnalytic QuestionAnalytics[]
     topic            Topic[]
     options          Options[]
-    sectionId        String?
-    section          Section?            @relation(fields: [sectionId], references: [id])
+    // sectionId        String?
+    // section          Section?            @relation(fields: [sectionId], references: [id])
     savedQuestionId  String?             @unique
     savedQuestion    SavedQuestion?      @relation(fields: [savedQuestionId], references: [id])
     practice         Practice[]
     createdAt        DateTime            @default(now())
     updatedAt        DateTime            @updatedAt
-    @@index([sectionId])
+    paperQuestion paperQuestion[]
+    // @@index([sectionId])
     @@index([examId])
     @@index([question])
 }
@@ -96,6 +96,7 @@ model QuestionAnalytics {
     question                  Question @relation(fields: [questionId], references: [id])
     questionId                String
     timeTakenToSolveInMinutes Int
+
     @@index([questionId])
     @@index([timeTakenToSolveInMinutes])
 }
@@ -111,12 +112,13 @@ model DiagramUrl {
     url        String
     question   Question @relation(fields: [questionId], references: [id])
     questionId String
+
     @@index([questionId])
 }
 
 model Topic {
     id                String             @id @default(cuid())
-    name              String
+    name              String             @unique
     question          Question[]
     practice          Practice[]
     topicWiseAccuracy topicWiseAccuracy?
@@ -130,12 +132,12 @@ model Options {
     isCorrect  Boolean  @default(false)
     question   Question @relation(fields: [questionId], references: [id])
     questionId String
+
     @@index([questionId])
 }
 
 model Exams {
-    id                String     @id @default(cuid())
-    name              String
+    id                String     @id @default(cuid()) //id hi name h
     date              DateTime
     durationInMinutes Int
     subjects          Subjects[]
@@ -143,19 +145,24 @@ model Exams {
     createdAt         DateTime   @default(now())
     updatedAt         DateTime   @updatedAt
     aiGeneratedPaper  Paper[]
-
-    @@index([name])
+    section         Section[]
     @@index([date])
 }
 
 model Section {
     id                  String                @id @default(cuid())
-    name                String
-    questions           Question[]
-    paperId             String
-    paper               Paper                 @relation(fields: [paperId], references: [id])
+    type                Type
+    numberOfQuestions    Int
+    weightage            Int?
+    negativeMarking      Int?
+    examId             String
+    exam               Exams                @relation(fields: [examId], references: [id])
     sectionDemographics SectionDemographics[]
-    @@index([paperId])
+    
+}
+enum Type {
+    MCQ
+    Numericals
 }
 
 model SectionDemographics {
@@ -167,16 +174,26 @@ model SectionDemographics {
     isGuessed                 Boolean?
     sectionId                 String
     section                   Section  @relation(fields: [sectionId], references: [id])
+
     @@index([sectionId])
 }
 
 model Subjects {
     id       String     @id @default(cuid())
-    name     String
+    name     String     @unique()
     exams    Exams[]
     question Question[]
     practice Practice[]
+
     @@index([name])
+}
+
+
+model paperQuestion {
+    id         String   @id @default(cuid())
+    questions Question[]
+    paperId    String @unique
+    paper      Paper    @relation(fields: [paperId], references: [id])
 }
 
 model Paper {
@@ -185,12 +202,12 @@ model Paper {
     userId                String
     user                  User            @relation(fields: [userId], references: [id])
     timeDurationInMinutes Int
-    section               Section[]
     paperAnalytics        PaperAnalytics?
     examId                String
     exam                  Exams           @relation(fields: [examId], references: [id])
     createdAt             DateTime        @default(now())
     updatedAt             DateTime        @updatedAt
+    paperQuestion         paperQuestion?
     @@index([userId])
     @@index([examId])
     @@index([createdAt])
@@ -215,6 +232,7 @@ model PaperAnalytics {
     unattemptedQuestions     Int
     accuracyPercentage       Float
     timePerQuestionInSeconds Float
+
     @@index([userId])
     @@index([paperId])
 }
@@ -231,8 +249,6 @@ model topicWiseAccuracy {
     topicId              String @unique
     noOfCorrectQuestions Int
     totalQuestions       Int
+
     @@index([topicId])
 }
-
-
-
