@@ -25,6 +25,8 @@ import {
   ListChecks,
   ClipboardCheck,
   Circle,
+  Eraser,
+  Send,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -750,82 +752,78 @@ const ExamInterface = () => {
 
         {/* Right Side - Question Palette and Status */}
         <div className="flex w-1/3 flex-col overflow-hidden border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-          {/* Status Section with modern styling */}
-          <div className="border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-5 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-bold">
-              <ClipboardCheck className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-              Test Summary
-            </h2>
+          {/* Compact Status Section */}
+          <div className="border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-3 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-1.5 text-base font-bold">
+                <ClipboardCheck className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                Test Summary
+              </h2>
 
-            {/* Redesigned stats cards */}
-            <div className="mb-6 grid grid-cols-3 gap-3">
-              <div className="flex flex-col rounded-lg bg-white p-3 shadow-sm dark:bg-zinc-800">
-                <div className="mb-1 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-green-500"></div>
+              {/* Progress Badge */}
+              <div className="flex items-center gap-2 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+                {Math.round(
+                  ((stats.answered +
+                    stats.guessed +
+                    stats.markedReviewAnswered) /
+                    stats.total) *
+                    100,
+                )}
+                % Complete
+              </div>
+            </div>
+
+            {/* Compact stat cards in a single row */}
+            <div className="mt-3 flex gap-2">
+              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     Answered
                   </span>
                 </div>
-                <span className="text-2xl font-semibold">{stats.answered}</span>
+                <span className="font-semibold">{stats.answered}</span>
               </div>
-              <div className="flex flex-col rounded-lg bg-white p-3 shadow-sm dark:bg-zinc-800">
-                <div className="mb-1 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-red-500"></div>
+              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-red-500"></div>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     Not Answered
                   </span>
                 </div>
-                <span className="text-2xl font-semibold">
-                  {stats.notAnswered}
-                </span>
+                <span className="font-semibold">{stats.notAnswered}</span>
               </div>
-              <div className="flex flex-col rounded-lg bg-white p-3 shadow-sm dark:bg-zinc-800">
-                <div className="mb-1 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-zinc-500"></div>
+              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 rounded-full bg-zinc-500"></div>
                   <span className="text-xs text-zinc-500 dark:text-zinc-400">
                     Not Visited
                   </span>
                 </div>
-                <span className="text-2xl font-semibold">
-                  {stats.notVisited}
-                </span>
+                <span className="font-semibold">{stats.notVisited}</span>
               </div>
             </div>
 
-            {/* Additional stats with sleek badges */}
-            <div className="mb-6 flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm dark:bg-zinc-800">
-                <Flag className="h-4 w-4 text-purple-500" />
-                <span className="text-sm">{stats.markedReview} Marked</span>
+            {/* Mini status pills */}
+            <div className="mt-2 flex gap-2 overflow-x-auto pb-1 text-xs">
+              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                <Flag className="h-3 w-3 text-purple-500" />
+                <span>{stats.markedReview} Marked</span>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm dark:bg-zinc-800">
-                <HelpCircle className="h-4 w-4 text-blue-500" />
-                <span className="text-sm">
-                  {stats.markedReviewAnswered} Marked & Answered
-                </span>
+              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                <HelpCircle className="h-3 w-3 text-blue-500" />
+                <span>{stats.markedReviewAnswered} Marked & Answered</span>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm dark:bg-zinc-800">
-                <LightbulbIcon className="h-4 w-4 text-amber-500" />
-                <span className="text-sm">{stats.guessed} Guessed</span>
+              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                <LightbulbIcon className="h-3 w-3 text-amber-500" />
+                <span>{stats.guessed} Guessed</span>
               </div>
             </div>
 
-            {/* Enhanced progress indicator */}
-            <div className="mt-4">
-              <div className="mb-2 flex justify-between text-sm">
-                <span className="font-medium">Overall Progress</span>
-                <span className="font-bold text-blue-600 dark:text-blue-400">
-                  {Math.round(
-                    ((stats.answered +
-                      stats.guessed +
-                      stats.markedReviewAnswered) /
-                      stats.total) *
-                      100,
-                  )}
-                  %
-                </span>
-              </div>
-              <div className="relative h-3 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+            {/* Slim progress bar */}
+            <div className="mt-2">
+              <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-in-out"
                   style={{
@@ -844,17 +842,46 @@ const ExamInterface = () => {
               onValueChange={setCurrentSection}
               className="h-full"
             >
-              <div className="border-b border-zinc-200 p-4 dark:border-zinc-800">
-                <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
-                  <ListChecks className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-                  Question Palette
-                </h2>
-                <TabsList className="w-full rounded-lg bg-zinc-100 dark:bg-zinc-800">
+              <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-950">
+                <div className="mb-2 flex flex-col items-start gap-2">
+                  <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                    <ListChecks className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                    Question Palette
+                  </h2>
+                  <div className="mb-3 grid grid-cols-3 gap-x-2 gap-y-1 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-green-500"></div>
+                      <span>Answered</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-red-500"></div>
+                      <span>Not Answered</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-zinc-500"></div>
+                      <span>Not Visited</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-purple-500"></div>
+                      <span>Marked</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-yellow-500"></div>
+                      <span>Guessed</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="h-2 w-2 rounded-sm bg-blue-500"></div>
+                      <span>Marked and answered</span>
+                    </div>
+                  </div>
+                </div>
+
+                <TabsList className="w-full rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-800">
                   {questionPaper.map((section) => (
                     <TabsTrigger
                       key={section.name}
                       value={section.name}
-                      className="flex-1 rounded-md py-2 transition-all data-[state=active]:bg-white data-[state=active]:shadow-md dark:data-[state=active]:bg-zinc-950"
+                      className="rounded-md py-1.5 text-xs transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-zinc-950"
                     >
                       {section.name}
                     </TabsTrigger>
@@ -868,40 +895,22 @@ const ExamInterface = () => {
                   value={section.name}
                   className="m-0 h-full overflow-auto"
                 >
-                  <ScrollArea className="h-[calc(100vh-340px)]">
-                    <div className="p-4">
-                      {/* Legend for question statuses */}
-                      <div className="mb-4 flex flex-wrap gap-2 text-xs">
-                        <div className="flex items-center gap-1">
-                          <div className="h-3 w-3 rounded-sm bg-green-500"></div>
-                          <span>Answered</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="h-3 w-3 rounded-sm bg-red-500"></div>
-                          <span>Not Answered</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="h-3 w-3 rounded-sm bg-zinc-500"></div>
-                          <span>Not Visited</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="h-3 w-3 rounded-sm bg-purple-500"></div>
-                          <span>Marked</span>
-                        </div>
-                      </div>
+                  <ScrollArea className="h-[calc(100vh-280px)]">
+                    <div className="p-3">
+                      {/* Compact legend for question statuses */}
 
-                      {/* Modern question grid */}
-                      <div className="grid grid-cols-5 gap-3">
+                      {/* Modern question grid with hover effects */}
+                      <div className="grid grid-cols-5 gap-2">
                         {section.questions.map((question) => (
                           <TooltipProvider key={question.id}>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <button
-                                  className={`flex h-11 w-11 items-center justify-center rounded-lg font-medium shadow-sm transition-all hover:scale-105 ${getStatusColor(
+                                  className={`flex h-10 w-10 items-center justify-center rounded-lg font-medium shadow-sm transition-all hover:scale-105 hover:shadow ${getStatusColor(
                                     question.status,
                                   )} ${
                                     currentQuestionId === question.id
-                                      ? "ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-zinc-900"
+                                      ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-zinc-900"
                                       : ""
                                   }`}
                                   onClick={() => changeQuestion(question.id)}
@@ -911,23 +920,22 @@ const ExamInterface = () => {
                               </TooltipTrigger>
                               <TooltipContent
                                 side="right"
-                                className="rounded-lg border border-zinc-200 bg-white p-3 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                                className="flex gap-2 rounded-lg border border-zinc-200 bg-white p-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
                               >
                                 <div className="text-sm">
                                   <div className="font-bold text-zinc-900 dark:text-zinc-100">
                                     Question {question.id}
                                   </div>
-                                  <div className="mt-1 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                    <Circle className="h-2 w-2 fill-current" />
-                                    Status:{" "}
+                                  <div className="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                    <Circle className="h-1.5 w-1.5 fill-current" />
                                     {question.status
                                       .replace(/-/g, " ")
                                       .replace(/\b\w/g, (l) => l.toUpperCase())}
                                   </div>
                                   {question.timeSpent > 0 && (
-                                    <div className="mt-1 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                      <Clock className="h-2 w-2" />
-                                      Time: {formatTime(question.timeSpent)}
+                                    <div className="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                      <Clock className="h-1.5 w-1.5" />
+                                      {formatTime(question.timeSpent)}
                                     </div>
                                   )}
                                 </div>
@@ -944,35 +952,39 @@ const ExamInterface = () => {
           </div>
 
           {/* Question Navigation - Modernized */}
-          <div className="border-t border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-4 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
+          <div className="border-t border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-3 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
                 onClick={goToPrevQuestion}
                 disabled={currentQuestionId <= 1}
-                className="border-zinc-300 bg-white transition-all duration-200 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                size="sm"
+                className="border-zinc-300 bg-white px-3 transition-all hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
               >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Previous
+                <ArrowLeft className="mr-1 h-3 w-3" />
+                Prev
               </Button>
 
               <div className="flex items-center gap-2">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-100">
-                  {currentQuestionId}
-                </span>
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                  of {stats.total}
-                </span>
+                <div className="flex items-center">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                    {currentQuestionId}
+                  </span>
+                  <span className="ml-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    of {stats.total}
+                  </span>
+                </div>
               </div>
 
               <Button
                 variant="outline"
                 onClick={goToNextQuestion}
                 disabled={currentQuestionId >= stats.total}
-                className="border-zinc-300 bg-white transition-all duration-200 hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                size="sm"
+                className="border-zinc-300 bg-white px-3 transition-all hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
               >
                 Next
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-1 h-3 w-3" />
               </Button>
             </div>
           </div>
