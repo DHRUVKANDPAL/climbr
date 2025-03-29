@@ -154,7 +154,7 @@ const TestimonialCarousel: React.FC = () => {
   }, []);
 
   return (
-    <section className="w-full bg-white py-16 dark:bg-zinc-950">
+    <section className="w-full bg-white py-16 border-t dark:bg-zinc-950">
       <div className="container mx-auto px-4">
         <div className="space-y-10 md:space-y-12">
           {/* Header */}

@@ -7,6 +7,8 @@ import Header from "@/components/Header";
 import { ExamMarquee } from "@/components/ExamMarquee";
 import Features from "@/components/Features";
 import TestimonialCarousel from "@/components/Testimonials";
+import Footer from "@/components/Footer";
+import CallToAction from "@/components/CTA";
 
 export default async function Home() {
   return (
@@ -17,7 +19,9 @@ export default async function Home() {
         <ExamMarquee />
         <Features />
         <TestimonialCarousel />
-        <ExamMarquee />
+        <CallToAction />
+        {/* <ExamMarquee /> */}
+        <Footer />
       </main>
     </HydrateClient>
   );
