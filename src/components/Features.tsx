@@ -146,7 +146,7 @@ const Features: React.FC = () => {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-white dark:bg-zinc-950 py-16 lg:py-24">
+    <section id="features" className="relative overflow-hidden bg-white dark:bg-zinc-950 py-16 lg:py-24">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
