@@ -158,3 +158,6 @@ Now, generate the ${sectionType} based on the above requirements.
 }
 
 
+
+// generateQuestions(5, "Data Structures", "GATE 2025", "MCQ", "Appropriate for the exam")
+

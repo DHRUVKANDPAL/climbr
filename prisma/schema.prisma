@@ -193,7 +193,19 @@ model paperQuestion {
     id         String   @id @default(cuid())
     questions Question[]
     paperId    String @unique
+    questionAnalytics PaperQuestionAnalytics[]
     paper      Paper    @relation(fields: [paperId], references: [id])
+}
+
+model PaperQuestionAnalytics {
+    id         String   @id @default(cuid())
+    paperQuestionId String
+    paperQuestion paperQuestion @relation(fields: [paperQuestionId], references: [id])
+    timeTakenToSolveInMinutes Int
+    isCorrect  Boolean?
+    isAttempted Boolean?
+    isMarkedForReview Boolean?
+    isGuessed  Boolean?
 }
 
 model Paper {
@@ -214,6 +226,7 @@ model Paper {
     @@index([updatedAt])
     @@index([name])
 }
+
 
 model PaperAnalytics {
     id                       String   @id @default(cuid())

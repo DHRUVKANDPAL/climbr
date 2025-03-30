@@ -116,7 +116,8 @@ export const postRouter = createTRPCRouter({
             create: input.sections.map((sec) => ({
               type: sec.type,
               numberOfQuestions: sec.numberOfQuestions,
-              examId: input.name.toLowerCase(),
+              weightage: sec.weightage,
+              negativeMarking: sec.negativeMarking,
             })),
           },
         },

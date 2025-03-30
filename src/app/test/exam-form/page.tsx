@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { api } from "@/trpc/react";
 
 // Define the schema for section
 const sectionSchema = z.object({
@@ -83,6 +84,7 @@ export default function ExamForm() {
   });
 
   const { fields, append, remove } = form.control._formValues.sections || [];
+  const submitForm=api.post.createExam.useMutation();
 
   // Handler for adding a new section
   const handleAddSection = () => {
@@ -98,7 +100,7 @@ export default function ExamForm() {
     const sections = form.getValues("sections") || [];
     form.setValue(
       "sections",
-      sections.filter((_, i) => i !== index),
+      sections?.filter((_, i) => i !== index),
     );
   };
 
@@ -106,7 +108,17 @@ export default function ExamForm() {
   const onSubmit = (data: FormValues) => {
     console.log(data);
     // Add your submission logic here
-    alert("Form submitted: " + JSON.stringify(data, null, 2));
+    submitForm.mutate(data,{
+      onSuccess: () => {
+        alert("Exam created successfully!");
+        
+      },
+      onError: (error) => {
+        console.error("Error creating exam:", error);
+        alert("Failed to create exam!");
+      },
+    });
+    
   };
 
   return (
@@ -215,30 +227,30 @@ export default function ExamForm() {
                 <FormItem>
                   <FormLabel>Subjects</FormLabel>
                   <div className="flex flex-wrap gap-2">
-                    {subjects.map((subject) => (
-                      <Button
-                        key={subject.id}
-                        type="button"
-                        variant={
-                          field.value.includes(subject.id)
-                            ? "default"
-                            : "outline"
-                        }
-                        onClick={() => {
-                          const values = [...field.value];
-                          if (values.includes(subject.id)) {
-                            field.onChange(
-                              values.filter((id) => id !== subject.id),
-                            );
-                          } else {
-                            field.onChange([...values, subject.id]);
-                          }
-                        }}
-                        className="mb-2"
-                      >
-                        {subject.name}
-                      </Button>
-                    ))}
+                  {subjects.map((subject) => (
+                    <Button
+                    key={subject.id}
+                    type="button"
+                    variant={
+                      field.value.includes(subject.name)
+                      ? "default"
+                      : "outline"
+                    }
+                    onClick={() => {
+                      const values = [...field.value];
+                      if (values.includes(subject.name)) {
+                      field.onChange(
+                        values.filter((name) => name !== subject.name),
+                      );
+                      } else {
+                      field.onChange([...values, subject.name]);
+                      }
+                    }}
+                    className="mb-2"
+                    >
+                    {subject.name}
+                    </Button>
+                  ))}
                   </div>
                   <FormMessage />
                 </FormItem>
