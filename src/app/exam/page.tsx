@@ -71,6 +71,7 @@ type Question = {
   selectedOption?: number;
   timeSpent: number; // Time spent on this question in seconds
 };
+
 type ExamSubmission = {
   examId: string;
   studentName: string;
@@ -108,20 +109,76 @@ type QuestionPaperSection = {
   questions: Question[];
 };
 
-const ExamInterface = () => {
-  // Update the state initializations to use localStorage
+const STORAGE_KEYS = {
+  EXAM_STATE: "examState",
+  CURRENT_SECTION: "currentSection",
+  CURRENT_QUESTION_ID: "currentQuestionId",
+  TIME_LEFT: "timeLeft",
+  EXAM_STARTED: "examStarted",
+  EXAM_START_TIME: "examStartTime",
+  STUDENT_NAME: "studentName",
+  STUDENT_EMAIL: "studentEmail",
+};
 
+const ExamInterface = () => {
   const { data: examData, isLoading } = api.post.getAllPapers.useQuery(
     "cm8vm5asq002j132cbt5yuau4",
   );
 
+  // Initialize states without depending on localStorage during render
   const [questionPaper, setQuestionPaper] = useState<QuestionPaperSection[]>(
     [],
   );
+  const [currentSection, setCurrentSection] = useState<string>("");
+  const [currentQuestionId, setCurrentQuestionId] = useState<number>(1);
+  const [timeLeft, setTimeLeft] = useState<number>(10800); // 3 hours in seconds
+  const [examStarted, setExamStarted] = useState<boolean>(false);
+  const [studentName, setStudentName] = useState<string>("");
+  const [studentEmail, setStudentEmail] = useState<string>("");
+  const [activeTimer, setActiveTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showStats, setShowStats] = useState<boolean>(false);
+  const [showSubmitDialog, setShowSubmitDialog] = useState<boolean>(false);
+  const [showStartDialog, setShowStartDialog] = useState<boolean>(true);
+  const [isClient, setIsClient] = useState<boolean>(false);
 
-  // Add this useEffect to update questionPaper when examData changes
-  // Update the useEffect that processes examData
-  // Add this before rendering your component
+  // Set isClient to true on component mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Load saved state from localStorage after component mounts on the client
+  useEffect(() => {
+    if (isClient) {
+      const storedExamStarted =
+        localStorage.getItem(STORAGE_KEYS.EXAM_STARTED) === "true";
+      setExamStarted(storedExamStarted);
+      setShowStartDialog(!storedExamStarted);
+
+      if (storedExamStarted) {
+        // Load other saved state only if exam has started
+        const storedSection = localStorage.getItem(
+          STORAGE_KEYS.CURRENT_SECTION,
+        );
+        if (storedSection) setCurrentSection(storedSection);
+
+        const storedQuestionId = localStorage.getItem(
+          STORAGE_KEYS.CURRENT_QUESTION_ID,
+        );
+        if (storedQuestionId) setCurrentQuestionId(parseInt(storedQuestionId));
+
+        const storedTimeLeft = localStorage.getItem(STORAGE_KEYS.TIME_LEFT);
+        if (storedTimeLeft) setTimeLeft(parseInt(storedTimeLeft));
+
+        const storedName = localStorage.getItem(STORAGE_KEYS.STUDENT_NAME);
+        if (storedName) setStudentName(storedName);
+
+        const storedEmail = localStorage.getItem(STORAGE_KEYS.STUDENT_EMAIL);
+        if (storedEmail) setStudentEmail(storedEmail);
+      }
+    }
+  }, [isClient]);
+
+  // Log examination data structure for debugging
   useEffect(() => {
     if (examData && examData.subjects.length > 0) {
       const firstSection = examData.subjects[0].sections.find(
@@ -133,7 +190,6 @@ const ExamInterface = () => {
           firstSection.questions[0].options,
         );
 
-        // Log the structure of the first option
         if (firstSection.questions[0].options.length > 0) {
           console.log(
             "First option structure:",
@@ -143,21 +199,38 @@ const ExamInterface = () => {
       }
     }
   }, [examData]);
-  // Add this helper function
+
+  // Helper function to extract option text
   const getOptionText = (option: any): string => {
     if (typeof option === "object" && option !== null) {
-      // Check for different properties that might contain the option text
       if ("option" in option) return String(option.option || "");
       if ("text" in option) return String(option.text || "");
       if ("value" in option) return String(option.value || "");
-      // If no known property is found, stringify the object
       return JSON.stringify(option);
     }
-
-    // If it's a string, use it directly
     return typeof option === "string" ? option : String(option || "");
   };
+
+  // Initialize question paper from examData or localStorage
   useEffect(() => {
+    if (!isClient) return; // Skip this effect during SSR
+
+    // Try to load saved state from localStorage first
+    const storedExamState = localStorage.getItem(STORAGE_KEYS.EXAM_STATE);
+
+    if (storedExamState && examStarted) {
+      try {
+        const parsedState = JSON.parse(storedExamState);
+        setQuestionPaper(parsedState);
+        console.log("Loaded exam state from localStorage");
+        return; // Exit early as we've loaded from localStorage
+      } catch (error) {
+        console.error("Error parsing stored exam state:", error);
+        // Fall through to initialize from examData
+      }
+    }
+
+    // If no valid localStorage data, initialize from examData
     if (examData) {
       const transformed: QuestionPaperSection[] = [];
       let globalQuestionId = 1;
@@ -204,35 +277,16 @@ const ExamInterface = () => {
 
       setQuestionPaper(transformed);
     }
-  }, [examData]);
+  }, [examData, examStarted, isClient]);
 
-  // Replace all localStorage-dependent state initializations
-  const [currentSection, setCurrentSection] = useState<string>("");
-  const [currentQuestionId, setCurrentQuestionId] = useState<number>(1);
-  const [timeLeft, setTimeLeft] = useState<number>(10800); // 3 hours in seconds
-  const [activeTimer, setActiveTimer] = useState<NodeJS.Timeout | null>(null);
-  const [examStarted, setExamStarted] = useState<boolean>(false);
-  const [showStats, setShowStats] = useState<boolean>(false);
-  const [showSubmitDialog, setShowSubmitDialog] = useState<boolean>(false);
-  const [showStartDialog, setShowStartDialog] = useState<boolean>(true);
-  const [studentName, setStudentName] = useState<string>("");
-  const [studentEmail, setStudentEmail] = useState<string>("");
-
-  // Add this inside the ExamInterface component, right after all the state definitions
-
-  // Start exam function
-  // Start exam function without localStorage
-
-  // Get the current question// Use useMemo for derived values
+  // Derived values using useMemo
   const allQuestions = useMemo(() => {
     return questionPaper.flatMap((section) => section.questions);
   }, [questionPaper]);
 
-  // Get the current question using useMemo
   const currentQuestion = useMemo(() => {
     return allQuestions.find((q) => q.id === currentQuestionId);
   }, [allQuestions, currentQuestionId]);
-  // Replace the existing stats object with this useMemo implementation
 
   const stats = useMemo(() => {
     return {
@@ -250,8 +304,7 @@ const ExamInterface = () => {
       totalTimeSpent: allQuestions.reduce((acc, q) => acc + q.timeSpent, 0),
     };
   }, [allQuestions]);
-  // Add these effects to save state changes
-  // Add this useMemo for section time statistics
+
   const sectionTimeStats = useMemo(() => {
     return questionPaper.map((section) => {
       const sectionQuestions = section.questions;
@@ -278,44 +331,82 @@ const ExamInterface = () => {
       };
     });
   }, [questionPaper, stats.totalTimeSpent]);
-  // Save question paper state
-  // useEffect(() => {
-  //   if (examStarted) {
-  //     localStorage.setItem("examState", JSON.stringify(questionPaper));
-  //   }
-  // }, [questionPaper, examStarted]);
 
-  // // Save current section
-  // useEffect(() => {
-  //   if (examStarted) {
-  //     localStorage.setItem("currentSection", currentSection);
-  //   }
-  // }, [currentSection, examStarted]);
+  const averageTimePerQuestion = useMemo(() => {
+    const answeredQuestions = allQuestions.filter(
+      (q) =>
+        q.status === "answered" ||
+        q.status === "guessed" ||
+        q.status === "marked-review-answered",
+    );
 
-  // // Save current question ID
-  // useEffect(() => {
-  //   if (examStarted) {
-  //     localStorage.setItem("currentQuestionId", currentQuestionId.toString());
-  //   }
-  // }, [currentQuestionId, examStarted]);
+    if (answeredQuestions.length === 0) return 0;
 
-  // // Save time left
-  // useEffect(() => {
-  //   if (examStarted) {
-  //     localStorage.setItem("timeLeft", timeLeft.toString());
-  //   }
-  // }, [timeLeft, examStarted]);
+    return Math.round(
+      answeredQuestions.reduce((acc, q) => acc + q.timeSpent, 0) /
+        answeredQuestions.length,
+    );
+  }, [allQuestions]);
 
-  // // Save exam started state
-  // useEffect(() => {
-  //   localStorage.setItem("examStarted", examStarted.toString());
-  // }, [examStarted]);
+  // Save question paper state to localStorage
+  useEffect(() => {
+    if (isClient && examStarted && questionPaper.length > 0) {
+      localStorage.setItem(
+        STORAGE_KEYS.EXAM_STATE,
+        JSON.stringify(questionPaper),
+      );
+    }
+  }, [questionPaper, examStarted, isClient]);
+
+  // Save current section to localStorage
+  useEffect(() => {
+    if (isClient && examStarted && currentSection) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_SECTION, currentSection);
+    }
+  }, [currentSection, examStarted, isClient]);
+
+  // Save current question ID to localStorage
+  useEffect(() => {
+    if (isClient && examStarted) {
+      localStorage.setItem(
+        STORAGE_KEYS.CURRENT_QUESTION_ID,
+        currentQuestionId.toString(),
+      );
+    }
+  }, [currentQuestionId, examStarted, isClient]);
+
+  // Save time left to localStorage
+  useEffect(() => {
+    if (isClient && examStarted) {
+      localStorage.setItem(STORAGE_KEYS.TIME_LEFT, timeLeft.toString());
+    }
+  }, [timeLeft, examStarted, isClient]);
+
+  // Save exam started state to localStorage
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem(STORAGE_KEYS.EXAM_STARTED, examStarted.toString());
+    }
+  }, [examStarted, isClient]);
+
+  // Save student info to localStorage
+  useEffect(() => {
+    if (isClient && examStarted) {
+      localStorage.setItem(STORAGE_KEYS.STUDENT_NAME, studentName);
+      localStorage.setItem(STORAGE_KEYS.STUDENT_EMAIL, studentEmail);
+    }
+  }, [studentName, studentEmail, examStarted, isClient]);
+
   // Main timer effect
   useEffect(() => {
+    if (!isClient || !examStarted) return;
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 0) {
           clearInterval(timer);
+          // Auto-submit exam when time runs out
+          setShowSubmitDialog(true);
           return 0;
         }
         return prev - 1;
@@ -323,10 +414,12 @@ const ExamInterface = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [examStarted, isClient]);
 
   // Question-specific timer effect
   useEffect(() => {
+    if (!isClient || !examStarted) return;
+
     // Clear previous timer
     if (activeTimer) {
       clearInterval(activeTimer);
@@ -359,9 +452,21 @@ const ExamInterface = () => {
         clearInterval(timer);
       }
     };
-  }, [currentQuestionId]);
+  }, [currentQuestionId, examStarted, isClient]);
 
-  // Format time
+  // Set initial section when question paper is loaded
+  useEffect(() => {
+    if (questionPaper.length > 0 && !currentSection) {
+      const initialSection = questionPaper[0].name;
+      setCurrentSection(initialSection);
+
+      if (isClient) {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_SECTION, initialSection);
+      }
+    }
+  }, [questionPaper, currentSection, isClient]);
+
+  // Format time function
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -370,7 +475,6 @@ const ExamInterface = () => {
   };
 
   // Handle option selection
-  // Update the selectOption function to ensure proper data formatting
   const selectOption = (optionIndex: number) => {
     if (!currentQuestion) return;
 
@@ -394,24 +498,46 @@ const ExamInterface = () => {
       });
     });
   };
+
+  // Start exam function
   const startExam = () => {
-    // Instead of saving to localStorage, just update state
+    const startTime = new Date().toISOString();
+
     setExamStarted(true);
     setShowStartDialog(false);
 
+    // Store exam start time
+    if (isClient) {
+      localStorage.setItem(STORAGE_KEYS.EXAM_START_TIME, startTime);
+      localStorage.setItem(STORAGE_KEYS.STUDENT_NAME, studentName);
+      localStorage.setItem(STORAGE_KEYS.STUDENT_EMAIL, studentEmail);
+      localStorage.setItem(STORAGE_KEYS.EXAM_STARTED, "true");
+    }
+
     // Set initial section if not already set
     if (!currentSection && questionPaper.length > 0) {
-      setCurrentSection(questionPaper[0].name);
+      const initialSection = questionPaper[0].name;
+      setCurrentSection(initialSection);
+
+      if (isClient) {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_SECTION, initialSection);
+      }
     }
   };
+
+  // Submit exam function
   const submitExam = async () => {
-    // Create the submission object without localStorage references
+    if (!isClient) return;
+
+    // Create the submission object
     const submission: ExamSubmission = {
       examId: "jee_main_2025",
       studentName: studentName || "Anonymous",
       studentEmail: studentEmail || "anonymous@example.com",
       submittedAt: new Date().toISOString(),
-      startTime: new Date(Date.now() - (10800 - timeLeft) * 1000).toISOString(),
+      startTime:
+        localStorage.getItem(STORAGE_KEYS.EXAM_START_TIME) ||
+        new Date(Date.now() - (10800 - timeLeft) * 1000).toISOString(),
       timeSpent: 10800 - timeLeft, // Total time spent
 
       // Process each question using allQuestions
@@ -451,10 +577,27 @@ const ExamInterface = () => {
     try {
       // Show submission animation/message here
       console.log("Submitting exam data:", submission);
+      // Simulate an API call to submit the exam data
+      // const response = await fetch("/api/submit-exam", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(submission),
+      // });
 
-      // Your existing submission logic...
+      // if (!response.ok) {
+      //   throw new Error("Failed to submit exam data");
+      // }
 
-      // Just redirect after submission - no localStorage to clean up
+      // const result = await response.json();
+      // console.log("Exam submission result:", result);
+
+      // Clear all localStorage after successful submission
+      Object.values(STORAGE_KEYS).forEach((key) => {
+        localStorage.removeItem(key);
+      });
+
       alert("Exam submitted successfully!");
       window.location.href = "/";
     } catch (error) {
@@ -462,12 +605,7 @@ const ExamInterface = () => {
       alert("Failed to submit exam. Please try again.");
     }
   };
-  // Add an effect to set the initial section when question paper is loaded
-  useEffect(() => {
-    if (questionPaper.length > 0 && !currentSection) {
-      setCurrentSection(questionPaper[0].name);
-    }
-  }, [questionPaper, currentSection]);
+
   // Handle changing question
   const changeQuestion = (questionId: number) => {
     // Update current question's status if it's not visited
@@ -552,7 +690,6 @@ const ExamInterface = () => {
   };
 
   // Guess and next
-  // Guess and next
   const guessAndNext = () => {
     if (!currentQuestion) return;
 
@@ -623,26 +760,25 @@ const ExamInterface = () => {
     }
   };
 
-  // Get average time per question
-  // Replace the averageTimePerQuestion function with this useMemo implementation
-  // Fix the averageTimePerQuestion implementation
-  const averageTimePerQuestion = useMemo(() => {
-    const answeredQuestions = allQuestions.filter(
-      (q) =>
-        q.status === "answered" ||
-        q.status === "guessed" ||
-        q.status === "marked-review-answered",
+  // If we're still in the server-rendering phase or loading, return a minimal UI
+  if (!isClient || isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <h2 className="mb-2 text-xl font-semibold">
+            Loading Exam Interface...
+          </h2>
+          <p>Please wait while we prepare your exam.</p>
+        </div>
+      </div>
     );
+  }
 
-    if (answeredQuestions.length === 0) return 0;
-
-    return Math.round(
-      answeredQuestions.reduce((acc, q) => acc + q.timeSpent, 0) /
-        answeredQuestions.length,
-    );
-  }, [allQuestions]);
   return (
-    <div className="flex h-screen flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div
+      className="flex h-screen flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"
+      suppressHydrationWarning={true}
+    >
       {/* Start Exam Dialog */}
       <Dialog open={showStartDialog} onOpenChange={setShowStartDialog}>
         <DialogContent className="sm:max-w-md">
@@ -937,7 +1073,33 @@ const ExamInterface = () => {
                 {currentQuestion && (
                   <>
                     <div className="mb-4 flex items-center justify-between">
-                      {/* Your existing header */}
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-semibold">
+                          Question {currentQuestionId}{" "}
+                          <span className="text-zinc-500 dark:text-zinc-400">
+                            ({currentQuestion.section})
+                          </span>
+                        </h2>
+                        <Badge
+                          className={getStatusColor(currentQuestion.status)}
+                        >
+                          {currentQuestion.status
+                            .replace(/-/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Time spent:
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="border-zinc-300 bg-transparent text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
+                        >
+                          <Clock className="mr-1 h-3 w-3 text-amber-500 dark:text-amber-400" />
+                          {formatTime(currentQuestion.timeSpent)}
+                        </Badge>
+                      </div>
                     </div>
 
                     {/* Add proper checks and conversions */}
@@ -956,7 +1118,78 @@ const ExamInterface = () => {
                     />
 
                     <div className="flex flex-wrap justify-between gap-2">
-                      {/* Your existing buttons */}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={goToPrevQuestion}
+                          disabled={currentQuestionId <= 1}
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          <ArrowLeft className="mr-2 h-4 w-4" />
+                          Previous
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={goToNextQuestion}
+                          disabled={currentQuestionId >= stats.total}
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          Next
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={clearResponse}
+                          disabled={
+                            currentQuestion.selectedOption === undefined
+                          }
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Clear
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={toggleMarkForReview}
+                          className={`rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
+                            currentQuestion.status.includes("marked-review")
+                              ? "text-purple-600 dark:text-purple-400"
+                              : ""
+                          }`}
+                        >
+                          <Flag className="mr-2 h-4 w-4" />
+                          {currentQuestion.status.includes("marked-review")
+                            ? "Unmark"
+                            : "Mark for Review"}
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={guessAndNext}
+                          disabled={
+                            currentQuestion.selectedOption === undefined
+                          }
+                          className="rounded-full border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                        >
+                          <LightbulbIcon className="mr-2 h-4 w-4" />
+                          Mark as Guessed
+                        </Button>
+
+                        <Button
+                          variant="default"
+                          onClick={goToNextQuestion}
+                          disabled={currentQuestionId >= stats.total}
+                          className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800"
+                        >
+                          <Save className="mr-2 h-4 w-4" />
+                          Save & Next
+                        </Button>
+                      </div>
                     </div>
                   </>
                 )}
