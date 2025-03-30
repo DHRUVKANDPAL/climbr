@@ -27,24 +27,7 @@ export async function GET(request: NextRequest) {
     console.log('metadata', metadata);
 
     // const createRoom=await db.
-    const existingRoom = await db.languageRooms.findUnique({
-      where: {
-      roomId: roomName ?? '',
-      },
-    });
-
-    if (!existingRoom) {
-      const createLangRoom = await db.languageRooms.create({
-      data: {
-        roomId: roomName ?? '',
-        languages: {
-        create: languageArray.map((lang) => ({
-          name: lang,
-        })),
-        },
-      },
-      });
-    }
+    
 
 
     if (livekitServerUrl === undefined) {

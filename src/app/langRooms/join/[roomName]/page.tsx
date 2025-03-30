@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { PageClientImpl } from './PageClientImpl';
 import { isVideoCodec } from '@/lib/types';
-import "../../../styles/main.module.css";
+import "../../../../styles/main.module.css";
 import "@livekit/components-styles";
 import "@livekit/components-styles/prefabs";
 export default async function Page({
@@ -13,6 +13,7 @@ export default async function Page({
     region?: string;
     hq?: string;
     codec?: string;
+    language: string;
   };
 }) {
   const codec: "vp9" | "vp8" | "h264" | "av1" =
@@ -30,7 +31,7 @@ export default async function Page({
         region={region}
         hq={hq}
         codec={codec}
-        language='en,fr,es,zh,ja,ko,pt,ru,de,it,ar,hi,id,th,tr,vi,pl,nl,sv,no,da,fi,cs,hu,ro,bg,el,he,uk,sk,sl,cro,bah,mk,sr,sq,bos,srp'
+        language={searchParams.language}
       />
     </div>
   );
