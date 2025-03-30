@@ -21,7 +21,11 @@ model Post {
 
 model User {
     id                String           @id @default(cuid())
-    name              String
+    firstName         String?
+    lastName          String?
+    imageUrl          String?
+    email             String           @unique
+
     swot              Swot? // one to one
     savedQuestions    SavedQuestion[]
     papers            Paper[]
@@ -33,7 +37,6 @@ model User {
     leaderBoardPoints Int?             @default(0)
     PaperAnalytics    PaperAnalytics[]
 
-    @@index([name])
 }
 
 model FriendRequest {
