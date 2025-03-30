@@ -42,6 +42,7 @@ import ActivityCalendar from "@/components/ActivityCalendarCard";
 import PercentileCard from "@/components/PercentileCard";
 import AnalysisCard from "@/components/AnalysisCard";
 import Leaderboard from "@/components/LeaderBoard";
+import DarkModeToggle from "@/components/DarkModeToggle";
 
 const ProfileDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -394,6 +395,7 @@ const ProfileDashboard = () => {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
+            <DarkModeToggle/>
             <Button variant="outline" size="sm" className="gap-1">
               <User className="h-4 w-4" />
               Edit Profile
