@@ -112,11 +112,11 @@ function ActivityCalendar({ userData }) {
   // Render the activity grid with appropriate colors and days
   function renderActivityGrid() {
     const colorClasses = [
-      "bg-zinc-800 dark:bg-zinc-700", // No activity
-      "bg-indigo-900 dark:bg-indigo-900", // Low
-      "bg-indigo-700 dark:bg-indigo-700", // Medium
-      "bg-indigo-500 dark:bg-indigo-600", // High
-      "bg-indigo-300 dark:bg-indigo-400", // Very high
+      "bg-zinc-300 dark:bg-zinc-700", // No activity
+      "bg-emerald-700 dark:bg-emerald-900", // Low
+      "bg-emerald-600 dark:bg-emerald-700", // Medium
+      "bg-emerald-500 dark:bg-emerald-600", // High
+      "bg-emerald-400 dark:bg-emerald-400", // Very high
     ];
 
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -281,7 +281,7 @@ function ActivityCalendar({ userData }) {
                           {week.map((day, dayIdx) => (
                             <div
                               key={dayIdx}
-                              className={`h-4 w-4 rounded-sm ${day ? colorClasses[day.level] : "bg-transparent"} transition-all hover:scale-110 hover:opacity-80`}
+                              className={`h-4 w-4 rounded-xs ${day ? colorClasses[day.level] : "bg-transparent"} transition-all hover:scale-110 hover:opacity-80`}
                               title={
                                 day
                                   ? `${day.level === 0 ? "No" : day.level} question${day.level === 1 ? "" : "s"} solved on ${day.formattedDate}`

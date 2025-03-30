@@ -969,8 +969,6 @@ const ExamInterface = () => {
                           <p className="text-sm text-zinc-500 dark:text-zinc-400">
                             Average Time Per Question
                           </p>
-                          // Update this part in your JSX where you display the
-                          average time
                           <p className="text-2xl font-bold">
                             {formatTime(averageTimePerQuestion)}
                           </p>
