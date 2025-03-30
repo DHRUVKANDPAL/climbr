@@ -4,7 +4,7 @@ import "@livekit/components-styles";
 import "@livekit/components-styles/prefabs";
 import { decodePassphrase } from '@/lib/client-utils';
 import { SettingsMenu } from '@/lib/SettingsMenu';
-import { ConnectionDetails } from '@/lib/types';
+import { type ConnectionDetails } from '@/lib/types';
 import {
   formatChatMessageLinks,
   LiveKitRoom,
@@ -14,12 +14,12 @@ import {
 } from '@livekit/components-react';
 import {
   ExternalE2EEKeyProvider,
-  RoomOptions,
-  VideoCodec,
+  type RoomOptions,
+  type VideoCodec,
   VideoPresets,
   Room,
   DeviceUnsupportedError,
-  RoomConnectOptions,
+  type RoomConnectOptions,
 } from 'livekit-client';
 import { useRouter } from 'next/navigation';
 import React from 'react';

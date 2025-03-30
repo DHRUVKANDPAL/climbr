@@ -4,7 +4,7 @@ import { isVideoCodec } from '@/lib/types';
 import "../../../styles/main.module.css";
 import "@livekit/components-styles";
 import "@livekit/components-styles/prefabs";
-export default function Page({
+export default async function Page({
   params,
   searchParams,
 }: {
@@ -21,11 +21,13 @@ export default function Page({
       : 'vp9';
   const hq = searchParams.hq === 'true' ? true : false;
   // console.log(params.roomName) 
+  const roomname=await params.roomName;
+  const region=await searchParams.region;
   return (
     <div className='h-screen'>
       <PageClientImpl
-        roomName={params.roomName}
-        region={searchParams.region}
+        roomName={roomname}
+        region={region}
         hq={hq}
         codec={codec}
       />
