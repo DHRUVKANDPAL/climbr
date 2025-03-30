@@ -25,16 +25,16 @@ function DemoMeetingTab({ label }: { label: string }) {
   const startMeeting = () => {
     if (e2ee) {
       router.push(
-        `/rooms/${generateRoomId()}#${encodePassphrase(sharedPassphrase)}`
+        `/langRooms/${generateRoomId()}#${encodePassphrase(sharedPassphrase)}`
       );
     } else {
-      router.push(`/rooms/${generateRoomId()}`);
+      router.push(`/langRooms/${generateRoomId()}`);
     }
   };
 
   return (
     <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-6 flex flex-col items-center gap-4">
-      <p className="text-lg font-semibold">HealthSync VideoCall Demo</p>
+      <p className="text-lg font-semibold">Climbr VideoCall Demo</p>
       <button
         className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
         onClick={startMeeting}

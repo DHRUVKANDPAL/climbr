@@ -1,6 +1,7 @@
 import { randomString } from '@/lib/client-utils';
-import { ConnectionDetails } from '@/lib/types';
-import { AccessToken, AccessTokenOptions, VideoGrant } from 'livekit-server-sdk';
+import { type ConnectionDetails } from '@/lib/types';
+import { db } from '@/server/db';
+import { AccessToken, type AccessTokenOptions,type VideoGrant } from 'livekit-server-sdk';
 import { NextRequest, NextResponse } from 'next/server';
 
 const API_KEY = process.env.LIVEKIT_API_KEY;
@@ -14,8 +15,30 @@ export async function GET(request: NextRequest) {
     const participantName = request.nextUrl.searchParams.get('participantName');
     const metadata = request.nextUrl.searchParams.get('metadata') ?? '';
     const region = request.nextUrl.searchParams.get('region');
+    const languages = request.nextUrl.searchParams.get('languages') ?? '';
+    const languageArray = languages.split(',').map((lang) => lang.trim());
     const livekitServerUrl = region ? getLiveKitURL(region) : LIVEKIT_URL;
     let randomParticipantPostfix = request.cookies.get(COOKIE_KEY)?.value;
+    console.log('randomParticipantPostfix', randomParticipantPostfix);
+    console.log('region', region);
+    console.log('livekitServerUrl', livekitServerUrl);
+    console.log('roomName', roomName);
+    console.log('participantName', participantName);
+    console.log('metadata', metadata);
+
+    // const createRoom=await db.
+    const createLangRoom= await db.languageRooms.create({
+      data: {
+        roomId: roomName ?? '',
+        languages:{
+          create: languageArray.map((lang) => ({
+            name: lang,
+          })),
+        }
+      },
+    })
+
+
     if (livekitServerUrl === undefined) {
       throw new Error('Invalid region');
     }

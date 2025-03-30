@@ -36,7 +36,8 @@ model User {
     creditPoints      Int?             @default(0)
     leaderBoardPoints Int?             @default(0)
     PaperAnalytics    PaperAnalytics[]
-
+    transactions       Transaction[]
+    isPremiumUser   Boolean? @default(false)
 }
 
 model FriendRequest {
@@ -268,4 +269,49 @@ model topicWiseAccuracy {
     totalQuestions       Int
 
     @@index([topicId])
+}
+
+
+
+model LanguageRooms{
+    roomId String @id
+    languages Languages[]
+}
+model Languages{
+    id String @id @default(cuid())
+    name String 
+    languageRoomId String 
+    languageRoom LanguageRooms @relation(fields: [languageRoomId], references: [roomId], onDelete: Cascade)
+}
+
+model StudyRoom{
+    roomId String @id
+}
+
+model ConsultingRoom{
+    roomId String @id
+    label Label[]
+}
+
+model Label{
+    name String @unique
+    consultingRoomId String
+    consultingRoom ConsultingRoom @relation(fields: [consultingRoomId], references: [roomId])
+}
+
+model MentalHealthRoom{
+    roomId String @id
+}
+
+model Transaction {
+    id                String   @id @default(cuid())
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+    userId            String
+    orderCreationId   String?
+    razorpayPaymentId String?
+    razorpayOrderId   String?
+    razorpaySignature String?
+    credits           Int
+    user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

@@ -7,7 +7,6 @@ import {
 } from "@/server/api/trpc";
 import generateQuestions from "@/lib/generateQuestion";
 
-
 function transformData(papers: any, examDetails: any) {
   const subjects = examDetails.subjects.map((subject: any) => {
     // Filter questions for the current subject
@@ -36,7 +35,6 @@ function transformData(papers: any, examDetails: any) {
 
   return { subjects };
 }
-
 
 export const postRouter = createTRPCRouter({
   hello: protectedProdcedure.query(async ({ ctx }) => {
@@ -168,9 +166,9 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       //TODO: Generate Question for all sections using promise.allSettled and hitting generateQuestion API
-      const userIdThroughClerk=ctx.user.userId;
-      if(!userIdThroughClerk) throw new Error("User not found")
-      console.log(userIdThroughClerk,"userIdThroughClerk")
+      const userIdThroughClerk = ctx.user.userId;
+      if (!userIdThroughClerk) throw new Error("User not found");
+      console.log(userIdThroughClerk, "userIdThroughClerk");
       // console.log(input.userId,"input.userId")
 
       const examDetails = await ctx.db.exams.findFirst({
@@ -286,36 +284,71 @@ export const postRouter = createTRPCRouter({
       return paper;
     }),
 
-  getAllPapers: protectedProdcedure.input(z.string()).query(async ({ ctx,input }) => {
-    const papers = await ctx.db.paper.findUnique({
-      where: {
-        id: input,
-      },
-      include: {
-        paperQuestion: {
-          include: {
-            questions: {
-              include: {
-                subject: true,
-                topic: true,
-                options: true,
+  getAllPapers: protectedProdcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const papers = await ctx.db.paper.findUnique({
+        where: {
+          id: input,
+        },
+        include: {
+          paperQuestion: {
+            include: {
+              questions: {
+                include: {
+                  subject: true,
+                  topic: true,
+                  options: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    const examDetails = await ctx.db.exams.findFirst({
-      where: { id: papers?.examId },
-      include: {
-        section: true,
-        subjects: true,
-      },
-    });
-    const transformedData = transformData(papers, examDetails);
-    console.log(JSON.stringify(transformedData, null, 2));
-    // console.log({ message: input, papers, examDetails });
-    return transformedData;
-  }),
+      const examDetails = await ctx.db.exams.findFirst({
+        where: { id: papers?.examId },
+        include: {
+          section: true,
+          subjects: true,
+        },
+      });
+      const transformedData = transformData(papers, examDetails);
+      console.log(JSON.stringify(transformedData, null, 2));
+      // console.log({ message: input, papers, examDetails });
+      return transformedData;
+    }),
+
+  mapUserToLanguageRoom: protectedProdcedure
+    .input(z.object({ language1: z.string(), language2: z.string() }))
+    .query(async ({ ctx, input }) => {
+
+      const mapping = await ctx.db.languageRooms.findMany({
+        include: {
+          languages: true,
+        },
+        where: {
+          AND: [
+        {
+          languages: {
+            some: {
+          name: input.language1,
+            },
+          },
+        },
+        {
+          languages: {
+            some: {
+          name: input.language2,
+            },
+          },
+        },
+          ],
+        },
+      });
+
+
+      const randomRoom = mapping[Math.floor(Math.random() * mapping.length)];
+      return randomRoom?.roomId;
+    }),
 });

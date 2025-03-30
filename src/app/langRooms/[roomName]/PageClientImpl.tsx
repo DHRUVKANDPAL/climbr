@@ -21,8 +21,10 @@ import {
   DeviceUnsupportedError,
   type RoomConnectOptions,
 } from 'livekit-client';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import React from 'react';
+import { api } from "@/trpc/react";
+import { Button } from "@/components/ui/button";
 
 const CONN_DETAILS_ENDPOINT =
   process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? '/api/connection-details';
@@ -33,6 +35,7 @@ export function PageClientImpl(props: {
   region?: string;
   hq: boolean;
   codec: VideoCodec;
+  language: string;
 }) {
   const [preJoinChoices, setPreJoinChoices] = React.useState<LocalUserChoices | undefined>(
     undefined,
@@ -53,6 +56,7 @@ export function PageClientImpl(props: {
     const url = new URL(CONN_DETAILS_ENDPOINT, window.location.origin);
     url.searchParams.append('roomName', props.roomName);
     url.searchParams.append('participantName', values.username);
+    url.searchParams.append('languages', props.language); // Example languages
     if (props.region) {
       url.searchParams.append('region', props.region);
     }
@@ -166,7 +170,18 @@ function VideoConferenceComponent(props: {
   }, []);
 
   const router = useRouter();
-  const handleOnLeave = React.useCallback(() => router.push('/'), [router]);
+
+  // const handleOnLeave = React.useCallback(() => router.push('/'), [router]);
+  const handleOnLeave = React.useCallback(async () => {
+    const disconnect = await fetch('/api/langRoomsDisconnect', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ roomName: props.connectionDetails.roomName }),
+    });
+    router.push('/');
+  }, [router, props.connectionDetails.roomName]);
   const handleError = React.useCallback((error: Error) => {
     console.error(error);
     alert(`Encountered an unexpected error, check the console logs for details: ${error.message}`);
@@ -196,7 +211,13 @@ function VideoConferenceComponent(props: {
           chatMessageFormatter={formatChatMessageLinks}
           SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
         />
+        {/* <Button onClick={handleClicks} variant={"destructive"} className="absolute top-0 right-0">Next</Button> */}
       </LiveKitRoom>
     </>
   );
 }
+
+// async function handleClicks() {
+//   const { data } = api.post.mapUserToLanguageRoom.useQuery({ language1: "eng", language2: "hin" });
+//   redirect(`/langRooms/${data}`);
+// }

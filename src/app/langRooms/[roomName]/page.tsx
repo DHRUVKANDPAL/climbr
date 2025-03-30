@@ -30,6 +30,7 @@ export default async function Page({
         region={region}
         hq={hq}
         codec={codec}
+        language='en'
       />
     </div>
   );
