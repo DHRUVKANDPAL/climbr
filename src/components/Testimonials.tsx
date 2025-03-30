@@ -187,7 +187,7 @@ const TestimonialCarousel: React.FC = () => {
             }}
             className="group w-full"
           >
-            <CarouselContent className="-ml-4 py-4">
+            <CarouselContent className="-ml-4 px-2 py-4 select-none">
               {testimonials.map((testimonial, index) => (
                 <CarouselItem
                   key={index}
@@ -198,8 +198,8 @@ const TestimonialCarousel: React.FC = () => {
               ))}
             </CarouselContent>
             <div className="mt-6 flex items-center justify-center gap-4">
-              <CarouselPrevious className="static translate-x-0 translate-y-0 opacity-50 transition-opacity group-hover:opacity-100" />
-              <CarouselNext className="static translate-x-0 translate-y-0 opacity-50 transition-opacity group-hover:opacity-100" />
+              <CarouselPrevious className="static translate-x-0 translate-y-0 opacity-50 text-zinc-800 dark:text-zinc-200 transition-opacity group-hover:opacity-100" />
+              <CarouselNext className="static translate-x-0 translate-y-0 opacity-50 text-zinc-800 dark:text-zinc-200 transition-opacity group-hover:opacity-100" />
             </div>
           </Carousel>
         </div>

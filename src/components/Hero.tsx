@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { AnimatedGridPattern } from "./magicui/animated-grid-pattern";
 import { ShimmerButton } from "./magicui/shimmer-button";
 import { Rocket, BookOpen } from "lucide-react";
+import Link from "next/link";
 
 export default function HeroSection() {
   const containerVariants = {
@@ -75,10 +76,11 @@ export default function HeroSection() {
           <ShimmerButton
             background="#312c85"
             className="group relative w-full max-w-xs overflow-hidden rounded-xl bg-indigo-900 px-6 py-3 text-white shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-indigo-500/50 sm:w-auto dark:bg-indigo-700 dark:text-white"
-          >
-            <span className="relative z-10 flex items-center justify-center text-sm font-semibold tracking-tight sm:text-base">
+            >
+            <Link className="relative z-10 flex items-center justify-center text-sm font-semibold tracking-tight sm:text-base"
+            href="/profile">
               <Rocket className="mr-2 h-5 w-5" /> Start Your Journey
-            </span>
+            </Link>
           </ShimmerButton>
           {/* 
           <ShimmerButton 

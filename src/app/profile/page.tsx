@@ -1,42 +1,11 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
-import {
-  UserCircle,
-  BookOpen,
-  FileText,
-  Trophy,
-  Bookmark,
-  LogOut,
-  Calendar,
-  ChevronDown,
-  Clock,
-  BookCheck,
-  ArrowRight,
-  Award,
-  Flame,
-  BarChart3,
-  PieChart,
-  LineChart,
-  Star,
-  EyeIcon,
-  MessageSquare,
-  CheckCircle2,
-  Brain,
-  Medal,
-  Target,
-  Layers,
-  Timer,
-  GraduationCap,
-} from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
@@ -44,18 +13,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import DarkModeToggle from "@/components/DarkModeToggle";
-import Logo from "@/components/Logo";
+import {
+  User,
+  Settings,
+  FileText,
+  BarChart3,
+  Target,
+  BookOpen,
+  GitPullRequest,
+  Bolt,
+  ChevronRight,
+  ArrowRight,
+  Calendar,
+  Clock,
+  BookCheck,
+  TrendingUp,
+  Award,
+} from "lucide-react";
+
+// Import custom components
+import SummaryCard from "@/components/SummaryCard";
+import DifficultyCard from "@/components/DifficultyCard";
+import AttendanceCard from "@/components/AttendenceCard";
+import WeeklyProgressCard from "@/components/WeeklyProgressCard";
+import RecentExamsCard from "@/components/RecentExamsCard";
+import BadgesCard from "@/components/Badges";
+import ActivityCalendar from "@/components/ActivityCalendarCard";
+import PercentileCard from "@/components/PercentileCard";
+import AnalysisCard from "@/components/AnalysisCard";
+import Leaderboard from "@/components/LeaderBoard";
 
 const ProfileDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [timeRange, setTimeRange] = useState("week");
-  const [examView, setExamView] = useState("jee");
+  const [examFilter, setExamFilter] = useState("all");
   const [currentStreak, setCurrentStreak] = useState("8");
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [expandedCard, setExpandedCard] = useState(null);
 
   // Trigger animations after component mount
   useEffect(() => {
@@ -189,29 +183,46 @@ const ProfileDashboard = () => {
         title: "Maximum Difference Between Even and Odd Frequency I",
         type: "Advanced",
         date: "2 months ago",
+        status: "Accepted",
+        difficulty: "Hard",
+        topic: "Algorithms",
       },
       {
         id: 2,
         title: "Maximum Ascending Subarray Sum",
         type: "Advanced",
         date: "2 months ago",
+        status: "Accepted",
+        difficulty: "Medium",
+        topic: "Dynamic Programming",
       },
       {
         id: 3,
         title: "Count Mentions Per User",
         type: "Intermediate",
         date: "2 months ago",
+        status: "Wrong Answer",
+        difficulty: "Medium",
+        topic: "Data Structures",
       },
       {
         id: 4,
         title: "Count Partitions with Even Sum Difference",
         type: "Advanced",
         date: "2 months ago",
+        status: "Accepted",
+        difficulty: "Hard",
+        topic: "Algorithms",
       },
     ],
     statsAnalysis: {
       strongTopics: ["Mechanics", "Organic Chemistry", "Calculus"],
       weakTopics: ["Thermodynamics", "Inorganic Chemistry", "Vectors"],
+      improvementAreas: [
+        "Coordinate Geometry",
+        "Modern Physics",
+        "Analytical Chemistry",
+      ],
       avgTime: {
         easy: 2.4,
         medium: 5.8,
@@ -222,15 +233,44 @@ const ProfileDashboard = () => {
         lastWeek: 5,
       },
     },
+    examSchedule: [
+      {
+        id: 1,
+        title: "JEE Advanced Mock Test 13",
+        date: "Tomorrow, 10:00 AM",
+        duration: "3 hours",
+      },
+      {
+        id: 2,
+        title: "Physics Sectional Test",
+        date: "Apr 2, 2:00 PM",
+        duration: "1 hour",
+      },
+      {
+        id: 3,
+        title: "Full Mock Test",
+        date: "Apr 5, 9:00 AM",
+        duration: "3 hours",
+      },
+    ],
   };
 
   // Generate more realistic activity data
   function generateActivityData() {
-    const days = 7; // 7 days in a week
-    const months = 12; // 12 months
+    const daysInWeek = 7;
+    const weeksToShow = 53;
 
     const data = [];
+    const today = new Date();
+    const endDate = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - daysInWeek * weeksToShow + 1);
+
+    const currentDate = new Date(startDate);
     const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
       "Apr",
       "May",
       "Jun",
@@ -240,1625 +280,1693 @@ const ProfileDashboard = () => {
       "Oct",
       "Nov",
       "Dec",
-      "Jan",
-      "Feb",
-      "Mar",
     ];
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    for (let m = 0; m < months; m++) {
-      for (let d = 0; d < days; d++) {
-        // Only include some days to match the pattern
-        if (d % 2 === 0 || d === 0 || d === days - 1) {
-          // Generate activity level with higher probability of low values
-          let level;
-          const rand = Math.random();
-          if (rand < 0.6)
-            level = 0; // 60% chance of no activity
-          else if (rand < 0.75)
-            level = 1; // 15% chance of low activity
-          else if (rand < 0.85)
-            level = 2; // 10% chance of medium activity
-          else if (rand < 0.95)
-            level = 3; // 10% chance of high activity
-          else level = 4; // 5% chance of very high activity
+    while (currentDate <= endDate) {
+      let level;
+      const rand = Math.random();
+      if (rand < 0.6) level = 0;
+      else if (rand < 0.75) level = 1;
+      else if (rand < 0.85) level = 2;
+      else if (rand < 0.95) level = 3;
+      else level = 4;
 
-          // Create clusters of activity
-          if (m > 0 && data.length > 0) {
-            const lastIndex = data.length - 1;
-            if (data[lastIndex].level > 0 && Math.random() < 0.7) {
-              level = Math.max(1, data[lastIndex].level - 1);
-            }
-          }
-
-          // Add more activity for certain months (like exam periods)
-          if (m === 2 || m === 8 || m === 11) {
-            level = Math.min(4, level + Math.floor(Math.random() * 2));
-          }
-
-          data.push({
-            month: monthNames[m],
-            level,
-          });
+      if (data.length > 0) {
+        const lastIndex = data.length - 1;
+        if (data[lastIndex].level > 0 && Math.random() < 0.7) {
+          level = Math.max(1, data[lastIndex].level - 1);
         }
       }
+
+      const month = currentDate.getMonth();
+      if (month === 2 || month === 8 || month === 11) {
+        level = Math.min(4, level + Math.floor(Math.random() * 2));
+      }
+
+      const dayOfWeek = currentDate.getDay();
+      if ((dayOfWeek === 0 || dayOfWeek === 6) && Math.random() > 0.5) {
+        level = Math.min(4, level + 1);
+      }
+
+      data.push({
+        date: new Date(currentDate),
+        month: monthNames[month],
+        monthIndex: month,
+        day: currentDate.getDate(),
+        dayOfWeek: dayOfWeek,
+        dayName: dayNames[dayOfWeek],
+        level,
+        formattedDate: `${monthNames[month]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`,
+      });
+
+      currentDate.setDate(currentDate.getDate() + 1);
     }
+
     return data;
   }
 
-  // Render the activity grid with appropriate colors
-  const renderActivityGrid = () => {
-    const colorClasses = [
-      "bg-zinc-800 dark:bg-zinc-700", // No activity
-      "bg-indigo-900 dark:bg-indigo-900", // Low
-      "bg-indigo-700 dark:bg-indigo-700", // Medium
-      "bg-indigo-500 dark:bg-indigo-600", // High
-      "bg-indigo-300 dark:bg-indigo-400", // Very high
-    ];
-
-    const months = [
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-      "Jan",
-      "Feb",
-      "Mar",
-    ];
-
-    return (
-      <div className="py-2">
-        <div className="h-full w-full">
-          <div className="mb-1 flex text-xs text-zinc-500 dark:text-zinc-400">
-            {months.map((month, idx) => (
-              <div key={idx} className="flex-1 text-center">
-                {month}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-51 gap-1">
-            {userData.activityGrid.map((item, i) => (
-              <div
-                key={i}
-                className={`h-4 w-4 rounded-sm ${colorClasses[item.level]} transition-all hover:scale-110 hover:opacity-80`}
-                title={`${item.level === 0 ? "No" : item.level} question${item.level === 1 ? "" : "s"} solved on ${item.month}`}
-              />
-            ))}
-          </div>
-
-          <div className="mt-2 flex items-center justify-end text-xs text-zinc-500 dark:text-zinc-400">
-            <span className="mr-1">Less</span>
-            {[0, 1, 2, 3, 4].map((level) => (
-              <div
-                key={level}
-                className={`ml-1 h-3 w-3 rounded-sm ${colorClasses[level]}`}
-              />
-            ))}
-            <span className="ml-1">More</span>
-          </div>
-        </div>
-      </div>
-    );
+  // Toggle card expansion
+  const toggleCardExpansion = (cardId) => {
+    setExpandedCard(expandedCard === cardId ? null : cardId);
   };
 
-  // Render donut chart for attendance tracking with animation
-  const renderDonutChart = () => {
-    const percentage = userData.attendance[timeRange];
-    const circumference = 2 * Math.PI * 40; // Circle with radius 40
-    const dashOffset = circumference - (percentage / 100) * circumference;
-
-    return (
-      <div className="relative mx-auto h-32 w-32">
-        <svg className="h-full w-full" viewBox="0 0 100 100">
-          {/* Background circle */}
-          <circle
-            cx="50"
-            cy="50"
-            r="40"
-            fill="none"
-            stroke="#27272a"
-            strokeWidth="10"
-          />
-          {/* Foreground circle - the percentage */}
-          <circle
-            cx="50"
-            cy="50"
-            r="40"
-            fill="none"
-            stroke="#10b981"
-            strokeWidth="10"
-            strokeDasharray={circumference}
-            strokeDashoffset={animationComplete ? dashOffset : circumference}
-            strokeLinecap="round"
-            transform="rotate(-90 50 50)"
-            style={{
-              transition: "stroke-dashoffset 1.5s ease-in-out",
-            }}
-          />
-          {/* Text in the middle */}
-          <text
-            x="50"
-            y="50"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-zinc-900 dark:fill-white"
-            fontSize="18"
-            fontWeight="bold"
-          >
-            {animationComplete ? `${percentage}%` : "0%"}
-          </text>
-        </svg>
-      </div>
-    );
-  };
-
-  // Render animated pie chart for subject distribution
-  const renderPieChart = () => {
-    const total = userData.subjects.reduce(
-      (acc, subject) => acc + subject.solved,
-      0,
-    );
-    let currentAngle = 0;
-
-    return (
-      <div className="relative mx-auto h-32 w-32">
-        <svg className="h-full w-full" viewBox="0 0 100 100">
-          {userData.subjects.map((subject, index) => {
-            // Calculate the angle for this slice
-            const angle = (subject.solved / total) * 360;
-            const startAngle = currentAngle;
-            currentAngle += angle;
-            const endAngle = currentAngle;
-
-            // Convert angles to radians for calculations
-            const startAngleRad = (startAngle - 90) * (Math.PI / 180);
-            const endAngleRad = (endAngle - 90) * (Math.PI / 180);
-
-            // Calculate the SVG arc path
-            const x1 = 50 + 40 * Math.cos(startAngleRad);
-            const y1 = 50 + 40 * Math.sin(startAngleRad);
-            const x2 = 50 + 40 * Math.cos(endAngleRad);
-            const y2 = 50 + 40 * Math.sin(endAngleRad);
-
-            // Determine if the arc is greater than 180 degrees (large-arc-flag)
-            const largeArcFlag = angle > 180 ? 1 : 0;
-
-            // Create the SVG path for the slice
-            const pathData = `
-              M 50 50
-              L ${x1} ${y1}
-              A 40 40 0 ${largeArcFlag} 1 ${x2} ${y2}
-              Z
-            `;
-
-            // Extract color name from bg-class
-            const colorName = subject.color.replace("bg-", "");
-
-            return (
-              <path
-                key={index}
-                d={pathData}
-                fill={colorName}
-                opacity={animationComplete ? 1 : 0}
-                transform={animationComplete ? "scale(1)" : "scale(0.8)"}
-                style={{
-                  transition: `opacity 0.5s ease-in-out ${index * 0.2}s, transform 0.5s ease-in-out ${index * 0.2}s`,
-                }}
-              >
-                <title>
-                  {subject.name}: {subject.solved} problems
-                </title>
-              </path>
-            );
-          })}
-        </svg>
-      </div>
-    );
-  };
-
-  // Render animated bar chart for weekly progress
-  const renderWeeklyBarChart = () => {
-    const maxValue = Math.max(
-      ...userData.weeklyProgress.map((day) => day.solved),
-    );
-
-    return (
-      <div className="h-48 w-full">
-        <svg className="h-full w-full" viewBox="0 0 300 150">
-          {/* Y-axis */}
-          <line
-            x1="30"
-            y1="20"
-            x2="30"
-            y2="120"
-            stroke="#71717a"
-            strokeWidth="1"
-          />
-
-          {/* X-axis */}
-          <line
-            x1="30"
-            y1="120"
-            x2="270"
-            y2="120"
-            stroke="#71717a"
-            strokeWidth="1"
-          />
-
-          {/* Bars */}
-          {userData.weeklyProgress.map((day, index) => {
-            const barWidth = 25;
-            const gap = 10;
-            const x = 40 + index * (barWidth + gap);
-            const barHeight = (day.solved / maxValue) * 80;
-            const y = 120 - barHeight;
-
-            return (
-              <g key={index}>
-                <rect
-                  x={x}
-                  y={animationComplete ? y : 120}
-                  width={barWidth}
-                  height={animationComplete ? barHeight : 0}
-                  fill="#10b981"
-                  rx="2"
-                  style={{
-                    transition: `height 1s ease-out ${index * 0.1}s, y 1s ease-out ${index * 0.1}s`,
-                  }}
-                >
-                  <title>
-                    {day.day}: {day.solved} problems solved
-                  </title>
-                </rect>
-                <text
-                  x={x + barWidth / 2}
-                  y={130}
-                  fill="#a1a1aa"
-                  fontSize="10"
-                  textAnchor="middle"
-                >
-                  {day.day}
-                </text>
-                <text
-                  x={x + barWidth / 2}
-                  y={y - 5}
-                  fill="#ffffff"
-                  fontSize="10"
-                  textAnchor="middle"
-                  opacity={animationComplete ? 1 : 0}
-                  style={{
-                    transition: `opacity 0.3s ease-in ${index * 0.1 + 0.5}s`,
-                  }}
-                >
-                  {day.solved}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-    );
-  };
-
-  // Render animated line chart for percentile growth
-  const renderLineChart = () => {
-    const data = userData.percentiles[examView];
-    const maxValue = Math.max(...data.map((item) => item.value));
-    const minValue = Math.min(...data.map((item) => item.value));
-    const range = maxValue - minValue;
-
-    // Calculate points for the line
-    const points = data
-      .map((item, index) => {
-        const x = 30 + index * (240 / (data.length - 1));
-        const y = 100 - ((item.value - minValue) / range) * 80;
-        return `${x},${y}`;
-      })
-      .join(" ");
-
-    return (
-      <div className="h-48 w-full">
-        <svg className="h-full w-full" viewBox="0 0 300 120">
-          {/* Background grid lines */}
-          {[0, 25, 50, 75, 100].map((percent, i) => {
-            const y = 20 + ((100 - percent) / 100) * 80;
-            return (
-              <g key={i}>
-                <line
-                  x1="30"
-                  y1={y}
-                  x2="270"
-                  y2={y}
-                  stroke="#71717a"
-                  strokeWidth="0.5"
-                  strokeDasharray="3,3"
-                  opacity="0.3"
-                />
-                <text
-                  x="20"
-                  y={y + 4}
-                  fill="#a1a1aa"
-                  fontSize="10"
-                  textAnchor="end"
-                >
-                  {minValue + (percent / 100) * range}%
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Y-axis */}
-          <line
-            x1="30"
-            y1="20"
-            x2="30"
-            y2="100"
-            stroke="#71717a"
-            strokeWidth="1"
-          />
-
-          {/* X-axis */}
-          <line
-            x1="30"
-            y1="100"
-            x2="270"
-            y2="100"
-            stroke="#71717a"
-            strokeWidth="1"
-          />
-
-          {/* X-axis labels (months) */}
-          {data.map((item, index) => (
-            <text
-              key={index}
-              x={30 + index * (240 / (data.length - 1))}
-              y="115"
-              fill="#a1a1aa"
-              fontSize="10"
-              textAnchor="middle"
-            >
-              {item.month}
-            </text>
-          ))}
-
-          {/* Data line with animation */}
-          <polyline
-            points={points}
-            fill="none"
-            stroke="#10b981"
-            strokeWidth="2"
-            strokeDasharray="300"
-            strokeDashoffset={animationComplete ? "0" : "300"}
-            style={{
-              transition: "stroke-dashoffset 1.5s ease-in-out",
-            }}
-          />
-
-          {/* Area under the line with gradient */}
-          <defs>
-            <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path
-            d={`${points} L ${270},100 L 30,100 Z`}
-            fill="url(#areaGradient)"
-            opacity={animationComplete ? "0.3" : "0"}
-            style={{
-              transition: "opacity 1s ease-in-out 0.5s",
-            }}
-          />
-
-          {/* Data points with animation */}
-          {data.map((item, index) => {
-            const x = 30 + index * (240 / (data.length - 1));
-            const y = 100 - ((item.value - minValue) / range) * 80;
-            return (
-              <g key={index}>
-                <circle
-                  cx={x}
-                  cy={y}
-                  r="4"
-                  fill="#10b981"
-                  opacity={animationComplete ? "1" : "0"}
-                  transform={animationComplete ? "scale(1)" : "scale(0)"}
-                  style={{
-                    transition: `opacity 0.3s ease-in ${0.7 + index * 0.1}s, transform 0.3s ease-in ${0.7 + index * 0.1}s`,
-                  }}
-                />
-                <text
-                  x={x}
-                  y={y - 10}
-                  fill="#ffffff"
-                  fontSize="10"
-                  textAnchor="middle"
-                  opacity={animationComplete ? "1" : "0"}
-                  style={{
-                    transition: `opacity 0.3s ease-in ${1 + index * 0.1}s`,
-                  }}
-                >
-                  {item.value}%
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-    );
-  };
-
-  // Render progress circle
-  const ProgressCircle = ({ value, total, color }) => {
-    const percentage = (value / total) * 100;
-    const circumference = 2 * Math.PI * 35;
-    const offset = circumference - (percentage / 100) * circumference;
-
-    return (
-      <div className="relative h-24 w-24">
-        <svg className="h-full w-full" viewBox="0 0 100 100">
-          <circle
-            cx="50"
-            cy="50"
-            r="35"
-            fill="none"
-            stroke="#27272a"
-            strokeWidth="7"
-            className="opacity-20"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="35"
-            fill="none"
-            stroke={color}
-            strokeWidth="7"
-            strokeDasharray={circumference}
-            strokeDashoffset={animationComplete ? offset : circumference}
-            strokeLinecap="round"
-            transform="rotate(-90 50 50)"
-            style={{
-              transition: "stroke-dashoffset 1.5s ease-out",
-            }}
-          />
-          <text
-            x="50"
-            y="45"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-zinc-900 text-lg font-bold dark:fill-white"
-          >
-            {animationComplete ? value : 0}
-          </text>
-          <text
-            x="50"
-            y="60"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-zinc-600 text-xs dark:fill-zinc-400"
-          >
-            /{total}
-          </text>
-        </svg>
-      </div>
-    );
-  };
+  // Prepare data for the current exam filter
+  const filteredExams =
+    examFilter === "all"
+      ? userData.recentExams
+      : userData.recentExams.filter(
+          (exam) =>
+            exam.subject.toLowerCase() === examFilter.toLowerCase() ||
+            (examFilter === "other" &&
+              !["Physics", "Chemistry", "Mathematics"].includes(exam.subject)),
+        );
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <div className="flex flex-col md:flex-row">
-        {/* Sidebar */}
-        <div className="h-auto w-full bg-white p-4 shadow-md md:fixed md:h-screen md:w-64 dark:bg-zinc-900">
-          <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-xl font-bold">
-             <Logo/>
-            </h1>
-            <DarkModeToggle/>
-          </div>
-
-          <div className="mb-6 flex flex-col items-center">
-            <div className="mb-4 flex items-center justify-center">
-              <Avatar className="h-20 w-20 border-2 border-indigo-500 shadow-lg">
-                <AvatarImage
-                  src="https://api.placeholder.com/400/320"
-                  alt={userData.name}
-                />
-                <AvatarFallback className="bg-indigo-600 text-xl text-white">
-                  {userData.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
+    <div className="container mx-auto px-4 py-6">
+      {/* Profile Header with Quick Stats */}
+      <div className="mb-6 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-6 dark:from-indigo-900/20 dark:to-purple-900/20">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg">
+              <div className="absolute inset-0 flex items-center justify-center text-3xl font-bold">
+                {userData.name.charAt(0)}
+              </div>
             </div>
-            <h2 className="text-center text-lg font-semibold">
-              {userData.name}
-            </h2>
-            <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-              {userData.email}
-            </p>
-            <div className="mt-2 flex justify-center space-x-2">
-              <Badge
-                variant="secondary"
-                className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-400"
-              >
-                JEE Aspirant
-              </Badge>
-              <Badge
-                variant="outline"
-                className="border-indigo-500 text-indigo-600 dark:text-indigo-400"
-              >
-                Premium
-              </Badge>
-            </div>
-            <div className="mt-3 w-full">
-              <div className="flex justify-between text-xs">
-                <span className="text-zinc-600 dark:text-zinc-400">Rank:</span>
-                <span className="font-semibold">{userData.rank}</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold">{userData.name}</h1>
+                <Badge className="bg-indigo-600">JEE Aspirant</Badge>
+              </div>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                {userData.email}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-3">
+                <div className="flex items-center gap-1 text-sm font-medium">
+                  <BarChart3 className="h-4 w-4 text-indigo-500" />
+                  Rank:{" "}
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                    {userData.rank}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-sm font-medium">
+                  <Award className="h-4 w-4 text-amber-500" />
+                  Rating:{" "}
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">
+                    {userData.contestRating}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-sm font-medium">
+                  <BookCheck className="h-4 w-4 text-emerald-500" />
+                  Solved:{" "}
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                    {userData.totalSolved}/{userData.totalQuestions}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-sm font-medium">
+                  <TrendingUp className="h-4 w-4 text-rose-500" />
+                  Percentile:{" "}
+                  <span className="font-semibold text-rose-600 dark:text-rose-400">
+                    {userData.topPercentile}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-
-          <div className="space-y-1">
-            <p className="mb-2 text-xs font-medium text-zinc-500 uppercase dark:text-zinc-400">
-              Menu
-            </p>
-            <NavItem
-              icon={<UserCircle className="mr-2 h-5 w-5" />}
-              text="Profile"
-              active
-            />
-            <NavItem
-              icon={<BookOpen className="mr-2 h-5 w-5" />}
-              text="Practice"
-            />
-            <NavItem
-              icon={<FileText className="mr-2 h-5 w-5" />}
-              text="Mock Tests"
-            />
-            <NavItem
-              icon={<Trophy className="mr-2 h-5 w-5" />}
-              text="Leaderboard"
-            />
-            <NavItem
-              icon={<Brain className="mr-2 h-5 w-5" />}
-              text="AI Assistant"
-            />
-            <NavItem
-              icon={<Bookmark className="mr-2 h-5 w-5" />}
-              text="Bookmarks"
-            />
-            <NavItem
-              icon={<LogOut className="mr-2 h-5 w-5" />}
-              text="Sign Out"
-              className="mt-6 text-red-500 hover:bg-red-100/30 hover:text-red-600 dark:hover:bg-red-950/30"
-            />
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="gap-1">
+              <User className="h-4 w-4" />
+              Edit Profile
+            </Button>
+            <Button variant="outline" size="sm" className="gap-1">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              className="gap-1 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+            >
+              <Bolt className="h-4 w-4" />
+              Upgrade Plan
+            </Button>
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 p-4 md:ml-64">
-          <Tabs
-            defaultValue="overview"
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <TabsList className="h-10 bg-zinc-100 dark:bg-zinc-800">
-                <TabsTrigger
-                  value="overview"
-                  className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
-                >
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger
-                  value="submissions"
-                  className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
-                >
-                  Submissions
-                </TabsTrigger>
-                <TabsTrigger
-                  value="statistics"
-                  className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
-                >
-                  Statistics
-                </TabsTrigger>
-                <TabsTrigger
-                  value="badges"
-                  className="data-[state=active]:bg-indigo-500 data-[state=active]:text-white"
-                >
-                  Badges
-                </TabsTrigger>
-              </TabsList>
-
-              <div className="flex items-center space-x-2">
-                <Select
-                  defaultValue="week"
-                  value={timeRange}
-                  onValueChange={setTimeRange}
-                >
-                  <SelectTrigger className="h-10 w-36 bg-white dark:bg-zinc-800">
-                    <SelectValue placeholder="Select Time Range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="day">Last 24 Hours</SelectItem>
-                    <SelectItem value="week">Last Week</SelectItem>
-                    <SelectItem value="month">Last Month</SelectItem>
-                    <SelectItem value="year">Last Year</SelectItem>
-                  </SelectContent>
-                </Select>
+      {/* Quick Actions Panel */}
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <button className="flex w-full items-center justify-between p-3 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md bg-emerald-100 p-2 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+                  <Calendar className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium">Upcoming Exam</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    {userData.examSchedule[0].title}
+                  </p>
+                </div>
               </div>
+              <ChevronRight className="h-4 w-4 text-zinc-400" />
+            </button>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <button className="flex w-full items-center justify-between p-3 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium">Daily Streak</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    {userData.streak} days
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-zinc-400" />
+            </button>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <button className="flex w-full items-center justify-between p-3 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md bg-amber-100 p-2 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+                  <Target className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium">Current Goal</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Top 20% Percentile
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-zinc-400" />
+            </button>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden">
+          <CardContent className="p-0">
+            <button className="flex w-full items-center justify-between p-3 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md bg-purple-100 p-2 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium">Recommended</p>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Focus on {userData.statsAnalysis.weakTopics[0]}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-zinc-400" />
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Tabs - Enhanced with improved UI */}
+      <Tabs
+        defaultValue="overview"
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <TabsList className="mb-4 sm:mb-0">
+            <TabsTrigger value="overview" className="gap-1.5">
+              <BarChart3 className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="submissions" className="gap-1.5">
+              <GitPullRequest className="h-4 w-4" />
+              Submissions
+            </TabsTrigger>
+            <TabsTrigger value="leaderboard" className="gap-1.5">
+              <BarChart3 className="h-4 w-4" />
+              LeaderBoard
+            </TabsTrigger>
+            <TabsTrigger value="exams" className="gap-1.5">
+              <FileText className="h-4 w-4" />
+              Exams
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-1.5">
+              <Target className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="resources" className="gap-1.5">
+              <BookOpen className="h-4 w-4" />
+              Resources
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Time Range Selector */}
+          {activeTab === "overview" && (
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Time Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">Last Week</SelectItem>
+                <SelectItem value="month">Last Month</SelectItem>
+                <SelectItem value="year">Last Year</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+
+          {/* Exam Filter */}
+          {activeTab === "exams" && (
+            <Select value={examFilter} onValueChange={setExamFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Filter Exams" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Subjects</SelectItem>
+                <SelectItem value="Physics">Physics</SelectItem>
+                <SelectItem value="Chemistry">Chemistry</SelectItem>
+                <SelectItem value="Mathematics">Mathematics</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        {/* Overview Tab Content - Improved Layout */}
+        <TabsContent value="overview" className="space-y-4">
+          {/* First Row - Key Metrics */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {/* Summary Card */}
+            <SummaryCard
+              userData={userData}
+              animationComplete={animationComplete}
+              timeRange={timeRange}
+              onExpand={() => toggleCardExpansion("summary")}
+              isExpanded={expandedCard === "summary"}
+            />
+
+            {/* Weekly Progress Card */}
+            <WeeklyProgressCard
+              weeklyProgress={userData.weeklyProgress}
+              animationComplete={animationComplete}
+              timeRange={timeRange}
+              onExpand={() => toggleCardExpansion("weekly")}
+              isExpanded={expandedCard === "weekly"}
+            />
+
+            {/* Attendance Card */}
+            <AttendanceCard
+              attendance={userData.attendance}
+              streak={userData.streak}
+              timeRange={timeRange}
+              animationComplete={animationComplete}
+              onExpand={() => toggleCardExpansion("attendance")}
+              isExpanded={expandedCard === "attendance"}
+            />
+          </div>
+
+          {/* Second Row - Performance & Activity */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+            {/* Difficulty Card - Spans 5 columns */}
+            <div className="md:col-span-5">
+              <DifficultyCard
+                difficultyStats={userData.difficultyStats}
+                subjects={userData.subjects}
+                animationComplete={animationComplete}
+                timeRange={timeRange}
+                onExpand={() => toggleCardExpansion("difficulty")}
+                isExpanded={expandedCard === "difficulty"}
+              />
             </div>
 
-            <TabsContent value="overview" className="mt-0">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {/* Summary Statistics */}
-                <Card className="overflow-hidden">
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <BarChart3 className="mr-2 h-5 w-5 text-indigo-500" />
-                      Profile Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                        <h3 className="mb-1 flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                          <CheckCircle2 className="mr-1 h-4 w-4" /> Solved
-                        </h3>
-                        <p className="text-xl font-bold">
-                          {userData.totalSolved}
-                        </p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          / {userData.totalQuestions} Total
-                        </p>
+            {/* Activity Calendar - Spans 7 columns */}
+            <div className="md:col-span-7">
+              <ActivityCalendar
+                userData={userData}
+                timeRange={timeRange}
+                onExpand={() => toggleCardExpansion("activity")}
+                isExpanded={expandedCard === "activity"}
+              />
+            </div>
+          </div>
+
+          {/* Third Row - Analysis & Progress */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {/* Recent Exams Card */}
+            <RecentExamsCard
+              exams={userData.recentExams}
+              onExpand={() => toggleCardExpansion("exams")}
+              isExpanded={expandedCard === "exams"}
+            />
+
+            {/* Percentile Progress Card */}
+            <PercentileCard
+              percentiles={userData.percentiles}
+              animationComplete={animationComplete}
+              timeRange={timeRange}
+              onExpand={() => toggleCardExpansion("percentile")}
+              isExpanded={expandedCard === "percentile"}
+            />
+
+            {/* Analysis Card */}
+            <AnalysisCard
+              statsAnalysis={userData.statsAnalysis}
+              onExpand={() => toggleCardExpansion("analysis")}
+              isExpanded={expandedCard === "analysis"}
+            />
+          </div>
+
+          {/* Fourth Row - Badges & Upcoming */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {/* Badges Card */}
+            <BadgesCard
+              badges={userData.badges}
+              onExpand={() => toggleCardExpansion("badges")}
+              isExpanded={expandedCard === "badges"}
+            />
+
+            {/* Upcoming Exams Card */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-md font-semibold">
+                  Upcoming Exams
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-2 py-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  View All
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {userData.examSchedule.map((exam) => (
+                    <div
+                      key={exam.id}
+                      className="flex items-start justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                    >
+                      <div>
+                        <p className="font-medium">{exam.title}</p>
+                        <div className="mt-1 flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>{exam.date}</span>
+                          <Separator orientation="vertical" className="h-3.5" />
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{exam.duration}</span>
+                        </div>
                       </div>
-                      <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                        <h3 className="mb-1 flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                          <Target className="mr-1 h-4 w-4" /> Attempting
-                        </h3>
-                        <p className="text-xl font-bold">
-                          {userData.attempting}
-                        </p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Questions
-                        </p>
+                      <Button size="sm" variant="outline">
+                        Prepare
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Submissions Tab Content */}
+        <TabsContent value="submissions">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Recent Submissions</CardTitle>
+                <div className="flex gap-2">
+                  <Select defaultValue="all">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="accepted">Accepted</SelectItem>
+                      <SelectItem value="wrong">Wrong Answer</SelectItem>
+                      <SelectItem value="tle">Time Limit Exceeded</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select defaultValue="all">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Difficulty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Difficulties</SelectItem>
+                      <SelectItem value="easy">Easy</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="hard">Hard</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {userData.recentSubmissions.map((submission) => (
+                  <div
+                    key={submission.id}
+                    className="flex flex-col justify-between rounded-lg border border-zinc-200 p-4 shadow-sm sm:flex-row sm:items-center dark:border-zinc-800"
+                  >
+                    <div className="mb-2 sm:mb-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{submission.title}</h3>
+                        <Badge
+                          className={`${
+                            submission.status === "Accepted"
+                              ? "bg-emerald-600"
+                              : "bg-rose-600"
+                          }`}
+                        >
+                          {submission.status}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className="border-zinc-300 dark:border-zinc-700"
+                        >
+                          {submission.difficulty}
+                        </Badge>
                       </div>
-                      <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                        <h3 className="mb-1 flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                          <Flame className="mr-1 h-4 w-4" /> Streak
-                        </h3>
-                        <p className="text-xl font-bold">{userData.streak}</p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Days
-                        </p>
-                      </div>
-                      <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                        <h3 className="mb-1 flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                          <Calendar className="mr-1 h-4 w-4" /> Active
-                        </h3>
-                        <p className="text-xl font-bold">
-                          {userData.totalActive}
-                        </p>
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                          Days
-                        </p>
+                      <div className="mt-1 flex items-center gap-3 text-sm text-zinc-500">
+                        <span>Topic: {submission.topic}</span>
+                        <Separator orientation="vertical" className="h-3.5" />
+                        <span>Submitted: {submission.date}</span>
                       </div>
                     </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="text-xs">
+                        View Solution
+                      </Button>
+                      <Button size="sm" className="text-xs">
+                        Solve Again
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 flex justify-center">
+                <Button className="gap-2">
+                  View All Submissions
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="leaderboard">
+          <Leaderboard/>
+        </TabsContent>
 
-                    <div className="mt-4 space-y-3">
-                      <div>
-                        <div className="mb-1 flex justify-between text-sm">
-                          <span className="font-medium">Contest Rating</span>
-                          <span className="font-semibold text-indigo-500">
-                            {userData.contestRating}
-                          </span>
-                        </div>
-                        <Progress
-                          value={60}
-                          className="h-2 bg-zinc-200 dark:bg-zinc-700"
-                        />
+        {/* Exams Tab Content */}
+        <TabsContent value="exams">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle>Your Exam Performance</CardTitle>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm">
+                    Download Reports
+                  </Button>
+                  <Button size="sm">Schedule New Test</Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredExams.map((exam) => (
+                  <div
+                    key={exam.id}
+                    className="flex flex-col justify-between rounded-lg border border-zinc-200 p-4 shadow-sm sm:flex-row sm:items-center dark:border-zinc-800"
+                  >
+                    <div className="mb-2 sm:mb-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{exam.title}</h3>
+                        <Badge
+                          variant="outline"
+                          className="border-zinc-300 dark:border-zinc-700"
+                        >
+                          {exam.subject}
+                        </Badge>
                       </div>
-                      <div>
-                        <div className="mb-1 flex justify-between text-sm">
-                          <span className="font-medium">Global Ranking</span>
-                          <span className="font-semibold">
-                            {userData.globalRanking}
-                          </span>
-                        </div>
-                        <Progress
-                          value={35}
-                          className="h-2 bg-zinc-200 dark:bg-zinc-700"
-                        />
-                      </div>
-                      <div>
-                        <div className="mb-1 flex justify-between text-sm">
-                          <span className="font-medium">Top Percentile</span>
-                          <span className="font-semibold">
-                            {userData.topPercentile}
-                          </span>
-                        </div>
-                        <Progress
-                          value={65}
-                          className="h-2 bg-zinc-200 dark:bg-zinc-700"
-                        />
+                      <div className="mt-1 flex items-center gap-3 text-sm text-zinc-500">
+                        <span>Taken: {exam.time}</span>
+                        <span>Score: {exam.score}</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <div className="text-sm font-medium">Percentile</div>
+                        <div
+                          className={`text-lg font-semibold ${
+                            exam.percentile > 90
+                              ? "text-emerald-600 dark:text-emerald-500"
+                              : exam.percentile > 75
+                                ? "text-blue-600 dark:text-blue-500"
+                                : "text-amber-600 dark:text-amber-500"
+                          }`}
+                        >
+                          {exam.percentile}%
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="text-xs">
+                          Analysis
+                        </Button>
+                        <Button size="sm" className="text-xs">
+                          Review
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 flex justify-center">
+                <Button className="gap-2">
+                  View All Exam Results
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-                {/* Problem Solving Stats */}
-                <Card>
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <PieChart className="mr-2 h-5 w-5 text-indigo-500" />
-                      Problem Difficulty
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                        <div className="mb-1 text-sm font-medium text-indigo-500">
+          {/* Additional exam-related content */}
+          <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Exam Performance by Subject */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-md font-semibold">
+                  Performance by Subject
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {userData.subjects.map((subject) => (
+                    <div key={subject.name} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{subject.name}</span>
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                          {Math.round((subject.solved / subject.total) * 100)}%
+                        </span>
+                      </div>
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                        <div
+                          className={`h-full rounded-full ${subject.color}`}
+                          style={{
+                            width: `${(subject.solved / subject.total) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Exam Schedule */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-md font-semibold">
+                  Upcoming Tests
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {userData.examSchedule.slice(0, 3).map((exam) => (
+                    <div
+                      key={exam.id}
+                      className="flex items-start justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                    >
+                      <div>
+                        <p className="font-medium">{exam.title}</p>
+                        <div className="mt-1 flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>{exam.date}</span>
+                          <Separator orientation="vertical" className="h-3.5" />
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>{exam.duration}</span>
+                        </div>
+                      </div>
+                      <Button size="sm" variant="outline">
+                        Prepare
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 flex justify-center">
+                  <Button variant="outline" className="w-full">
+                    Schedule New Test
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Detailed performance analysis */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="text-md font-semibold">
+                Detailed Performance Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="topics">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="topics">Topic Breakdown</TabsTrigger>
+                  <TabsTrigger value="time">Time Analysis</TabsTrigger>
+                  <TabsTrigger value="mistakes">Common Mistakes</TabsTrigger>
+                </TabsList>
+                <TabsContent value="topics">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      Strong Topics
+                    </h3>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                      {userData.statsAnalysis.strongTopics.map((topic) => (
+                        <div
+                          key={topic}
+                          className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{topic}</span>
+                            <Badge className="bg-emerald-600">Strong</Badge>
+                          </div>
+                          <div className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                            85% accuracy rate
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <h3 className="mt-6 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      Areas for Improvement
+                    </h3>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                      {userData.statsAnalysis.weakTopics.map((topic) => (
+                        <div
+                          key={topic}
+                          className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{topic}</span>
+                            <Badge className="bg-amber-600">Needs Work</Badge>
+                          </div>
+                          <div className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                            42% accuracy rate
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="time">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      Average Time per Question Difficulty
+                    </h3>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                        <div className="mb-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
                           Easy
                         </div>
-                        <div className="text-xl font-bold">
-                          {userData.difficultyStats.easy.solved}
+                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-500">
+                          {userData.statsAnalysis.avgTime.easy} min
                         </div>
-                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                          /{userData.difficultyStats.easy.total}
+                        <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          {userData.statsAnalysis.avgTime.easy < 3
+                            ? "Good pace"
+                            : "Try to improve speed"}
                         </div>
-                        <Progress
-                          value={
-                            (userData.difficultyStats.easy.solved /
-                              userData.difficultyStats.easy.total) *
-                            100
-                          }
-                          className="mt-2 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                        />
                       </div>
-                      <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                        <div className="mb-1 text-sm font-medium text-yellow-500">
+                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                        <div className="mb-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
                           Medium
                         </div>
-                        <div className="text-xl font-bold">
-                          {userData.difficultyStats.medium.solved}
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-500">
+                          {userData.statsAnalysis.avgTime.medium} min
                         </div>
-                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                          /{userData.difficultyStats.medium.total}
+                        <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          {userData.statsAnalysis.avgTime.medium < 6
+                            ? "Good pace"
+                            : "Try to improve speed"}
                         </div>
-                        <Progress
-                          value={
-                            (userData.difficultyStats.medium.solved /
-                              userData.difficultyStats.medium.total) *
-                            100
-                          }
-                          className="mt-2 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                        />
                       </div>
-                      <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                        <div className="mb-1 text-sm font-medium text-red-500">
+                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                        <div className="mb-1 text-sm font-medium text-zinc-500 dark:text-zinc-400">
                           Hard
                         </div>
-                        <div className="text-xl font-bold">
-                          {userData.difficultyStats.hard.solved}
+                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-500">
+                          {userData.statsAnalysis.avgTime.hard} min
                         </div>
-                        <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                          /{userData.difficultyStats.hard.total}
-                        </div>
-                        <Progress
-                          value={
-                            (userData.difficultyStats.hard.solved /
-                              userData.difficultyStats.hard.total) *
-                            100
-                          }
-                          className="mt-2 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-6">
-                      <h3 className="mb-3 text-sm font-medium">
-                        Subject Distribution
-                      </h3>
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        <div className="col-span-1 md:col-span-1">
-                          {renderPieChart()}
-                        </div>
-                        <div className="col-span-1 space-y-3 md:col-span-2">
-                          {userData.subjects.map((subject, index) => (
-                            <div key={index}>
-                              <div className="mb-1 flex items-center justify-between text-sm">
-                                <span className="font-medium">
-                                  {subject.name}
-                                </span>
-                                <span>
-                                  {subject.solved}/{subject.total}
-                                </span>
-                              </div>
-                              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-                                <div
-                                  className={`h-full ${subject.color}`}
-                                  style={{
-                                    width: `${
-                                      (subject.solved / subject.total) * 100
-                                    }%`,
-                                    transition: "width 1s ease-in-out",
-                                  }}
-                                ></div>
-                              </div>
-                            </div>
-                          ))}
+                        <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+                          {userData.statsAnalysis.avgTime.hard < 10
+                            ? "Excellent pace"
+                            : "Within expected range"}
                         </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
 
-                {/* Recent Exams */}
-                <Card className="row-span-2">
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <FileText className="mr-2 h-5 w-5 text-indigo-500" />
-                      Recent Exams
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      {userData.recentExams.map((exam) => (
-                        <div
-                          key={exam.id}
-                          className="rounded-lg border border-zinc-200 p-3 transition-all hover:border-indigo-200 hover:bg-indigo-50/30 dark:border-zinc-700 dark:hover:border-indigo-900 dark:hover:bg-indigo-950/20"
-                        >
-                          <div className="mb-2 flex items-start justify-between">
-                            <h3 className="text-sm font-medium">
-                              {exam.title}
-                            </h3>
-                            <Badge
-                              variant="outline"
-                              className="bg-indigo-100 font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400"
-                            >
-                              {exam.percentile}%
-                            </Badge>
-                          </div>
-                          <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                            <span>{exam.subject}</span>
-                            <span>{exam.time}</span>
-                          </div>
-                          <div className="mt-2 flex items-center justify-between">
-                            <Progress
-                              value={
-                                (parseInt(exam.score.split("/")[0]) /
-                                  parseInt(exam.score.split("/")[1])) *
-                                100
-                              }
-                              className="h-1.5 w-4/5 bg-zinc-200 dark:bg-zinc-700"
-                            />
-                            <span className="text-xs font-medium">
-                              {exam.score}
-                            </span>
-                          </div>
+                    <h3 className="mt-6 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      Time Management Recommendations
+                    </h3>
+                    <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                      <ul className="ml-6 list-disc space-y-2 text-sm">
+                        <li>
+                          Allocate no more than 1-2 minutes for easy questions
+                        </li>
+                        <li>
+                          For medium questions, aim to complete within 4-5
+                          minutes
+                        </li>
+                        <li>
+                          Hard questions should be attempted after completing
+                          easier ones
+                        </li>
+                        <li>
+                          Practice timed mock tests regularly to improve speed
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </TabsContent>
+                <TabsContent value="mistakes">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      Common Error Patterns
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium">Calculation Errors</div>
+                          <Badge
+                            variant="outline"
+                            className="border-rose-300 text-rose-600 dark:border-rose-800 dark:text-rose-400"
+                          >
+                            42% of mistakes
+                          </Badge>
                         </div>
-                      ))}
-                    </div>
-
-                    <button className="mt-4 flex w-full items-center justify-center rounded-md bg-zinc-100 py-2 text-sm font-medium hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                      View All Exams
-                      <ArrowRight className="ml-1 h-4 w-4" />
-                    </button>
-                  </CardContent>
-                </Card>
-
-                {/* Weekly Progress Chart */}
-                <Card>
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <LineChart className="mr-2 h-5 w-5 text-indigo-500" />
-                      Weekly Progress
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    {renderWeeklyBarChart()}
-                  </CardContent>
-                  <CardFooter className="border-t border-zinc-200 pt-2 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                    <div className="flex w-full items-center justify-between">
-                      <span>
-                        Total:{" "}
-                        {userData.weeklyProgress.reduce(
-                          (acc, day) => acc + day.solved,
-                          0,
-                        )}{" "}
-                        problems this week
-                      </span>
-                      <span className="flex items-center font-medium text-indigo-600">
-                        <Trophy className="mr-1 h-4 w-4" /> Best day:{" "}
-                        {Math.max(
-                          ...userData.weeklyProgress.map((day) => day.solved),
-                        )}
-                      </span>
-                    </div>
-                  </CardFooter>
-                </Card>
-
-                {/* Attendance & Streaks */}
-                <Card>
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <Flame className="mr-2 h-5 w-5 text-indigo-500" />
-                      Attendance & Streaks
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="grid grid-cols-2 gap-4 pt-4">
-                    <div className="flex flex-col items-center justify-center">
-                      <h3 className="mb-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                        Attendance Rate
-                      </h3>
-                      {renderDonutChart()}
-                      <div className="mt-2 text-center">
-                        <p className="text-sm font-medium">
-                          {userData.attendance[timeRange]}% in the last{" "}
-                          {timeRange}
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                          Most frequent in Complex Numbers and Integration
+                          problems. Double-check your calculations.
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium">
+                            Conceptual Misunderstanding
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="border-amber-300 text-amber-600 dark:border-amber-800 dark:text-amber-400"
+                          >
+                            35% of mistakes
+                          </Badge>
+                        </div>
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                          Most common in Thermodynamics and Electromagnetic
+                          Induction. Review core principles.
+                        </p>
+                      </div>
+                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium">Formula Application</div>
+                          <Badge
+                            variant="outline"
+                            className="border-blue-300 text-blue-600 dark:border-blue-800 dark:text-blue-400"
+                          >
+                            23% of mistakes
+                          </Badge>
+                        </div>
+                        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                          Particularly in Problems involving Kinematics and
+                          Chemical Equilibrium. Create formula flashcards.
                         </p>
                       </div>
                     </div>
-                    <div className="flex flex-col items-center justify-center">
-                      <h3 className="mb-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                        Current Streak
-                      </h3>
-                      <div className="relative mb-2 flex h-24 w-24 items-center justify-center">
-                        <div className="absolute inset-0 animate-pulse rounded-full bg-indigo-500/10"></div>
-                        <div className="absolute inset-2 rounded-full border-4 border-indigo-500/30"></div>
-                        <div className="z-10 text-center">
-                          <div className="text-3xl font-bold text-indigo-500">
-                            {currentStreak}
-                          </div>
-                          <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                            days
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-2 text-center">
-                        <p className="text-sm font-medium">
-                          Best: {userData.streak} days
-                        </p>
-                      </div>
+
+                    <h3 className="mt-6 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      Improvement Strategy
+                    </h3>
+                    <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                      <ul className="ml-6 list-disc space-y-2 text-sm">
+                        <li>
+                          Focus on understanding concepts rather than memorizing
+                          solutions
+                        </li>
+                        <li>
+                          Practice step-by-step problem-solving techniques
+                        </li>
+                        <li>Review mistakes from past exams regularly</li>
+                        <li>
+                          Create a personalized formula sheet for quick
+                          reference
+                        </li>
+                        <li>
+                          Work on time management to reduce careless errors
+                        </li>
+                      </ul>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                {/* Activity Grid */}
-                <Card className="col-span-1 md:col-span-2">
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <Calendar className="mr-2 h-5 w-5 text-indigo-500" />
-                      Activity Calendar
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    {renderActivityGrid()}
-                  </CardContent>
-                  <CardFooter className="border-t border-zinc-200 pt-2 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                    <div className="flex w-full items-center justify-between">
-                      <span>
-                        {
-                          userData.activityGrid.filter((item) => item.level > 0)
-                            .length
-                        }{" "}
-                        days with activity in the past year
-                      </span>
-                      <span className="flex items-center font-medium text-indigo-600">
-                        <CheckCircle2 className="mr-1 h-4 w-4" />
-                        {userData.activityGrid.reduce(
-                          (max, item) => Math.max(max, item.level),
-                          0,
-                        )}
-                        max problems in a day
-                      </span>
-                    </div>
-                  </CardFooter>
-                </Card>
-
-                {/* Badges Section */}
-                <Card>
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center justify-between text-lg">
-                      <div className="flex items-center">
-                        <Award className="mr-2 h-5 w-5 text-indigo-500" />
-                        Your Badges
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="rounded-full bg-indigo-100 px-2 text-xs text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-400"
-                      >
-                        {userData.badges.length}
-                      </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                      {userData.badges.slice(0, 6).map((badge, index) => {
-                        const IconComponent = {
-                          Award: Award,
-                          BookCheck: BookCheck,
-                          Flame: Flame,
-                          Clock: Clock,
-                          Trophy: Trophy,
-                        }[badge.icon];
-
-                        return (
-                          <div
-                            key={badge.id}
-                            className="flex flex-col items-center rounded-lg border border-zinc-200 p-3 text-center transition-all hover:border-indigo-300 hover:bg-indigo-50/30 dark:border-zinc-700 dark:hover:border-indigo-900 dark:hover:bg-indigo-950/20"
-                          >
-                            <div className="mb-2 rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/40">
-                              {IconComponent && (
-                                <IconComponent className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                              )}
-                            </div>
-                            <div className="text-xs font-medium">
-                              {badge.name}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {userData.badges.length > 6 && (
-                      <button className="mt-3 flex w-full items-center justify-center rounded-md bg-zinc-100 py-1.5 text-xs font-medium hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                        Show {userData.badges.length - 6} more
-                        <ChevronDown className="ml-1 h-3 w-3" />
-                      </button>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="submissions" className="mt-0">
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-                <Card className="lg:col-span-3">
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <FileText className="mr-2 h-5 w-5 text-indigo-500" />
-                      Recent Submissions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b border-zinc-200 text-left text-sm font-medium text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                            <th className="pb-2">Problem</th>
-                            <th className="pb-2">Level</th>
-                            <th className="pb-2">Status</th>
-                            <th className="pb-2">Time</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {userData.recentSubmissions.map((submission) => (
-                            <tr
-                              key={submission.id}
-                              className="border-b border-zinc-100 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-                            >
-                              <td className="py-3 text-sm font-medium">
-                                {submission.title}
-                              </td>
-                              <td className="py-3">
-                                <Badge
-                                  variant="outline"
-                                  className={
-                                    submission.type === "Advanced"
-                                      ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                                      : submission.type === "Intermediate"
-                                        ? "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400"
-                                        : "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                                  }
-                                >
-                                  {submission.type}
-                                </Badge>
-                              </td>
-                              <td className="py-3">
-                                <span className="flex items-center font-medium text-indigo-500">
-                                  <CheckCircle2 className="mr-1 h-4 w-4" />
-                                  Accepted
-                                </span>
-                              </td>
-                              <td className="py-3 text-sm text-zinc-500 dark:text-zinc-400">
-                                {submission.date}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <button className="mt-4 flex w-full items-center justify-center rounded-md bg-zinc-100 py-2 text-sm font-medium hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                      View All Submissions
-                      <ArrowRight className="ml-1 h-4 w-4" />
-                    </button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <Layers className="mr-2 h-5 w-5 text-indigo-500" />
-                      Stats by Languages
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      {userData.languages.map((lang, index) => (
-                        <div key={index} className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">
-                              {lang.name}
-                            </span>
-                            <span className="text-sm font-medium">
-                              {lang.questions}
-                            </span>
-                          </div>
-                          <Progress
-                            value={
-                              (lang.questions / userData.totalSolved) * 100
-                            }
-                            className="h-2 bg-zinc-200 dark:bg-zinc-700"
-                          />
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-6">
-                      <h3 className="mb-3 text-sm font-medium">
-                        Skills Analysis
-                      </h3>
-                      <div className="space-y-2">
-                        {userData.skills.slice(0, 3).map((skill, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between rounded-lg border border-zinc-200 p-2 dark:border-zinc-700"
-                          >
-                            <div className="flex items-center">
-                              <Badge
-                                className={
-                                  skill.level === "Advanced"
-                                    ? "mr-2 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400"
-                                    : "mr-2 bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400"
-                                }
-                              >
-                                {skill.level}
-                              </Badge>
-                              <span className="text-sm font-medium">
-                                {skill.name}
-                              </span>
-                            </div>
-                            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                              {skill.count}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                      <button className="mt-3 flex w-full items-center justify-center rounded-md bg-zinc-100 py-1.5 text-xs font-medium hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700">
-                        View all skills
-                        <ChevronDown className="ml-1 h-3 w-3" />
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="statistics" className="mt-0">
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <Card className="lg:col-span-2">
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="flex items-center text-lg">
-                        <LineChart className="mr-2 h-5 w-5 text-indigo-500" />
-                        Percentile Trend
-                      </CardTitle>
-                      <Select
-                        defaultValue="jee"
-                        value={examView}
-                        onValueChange={setExamView}
-                      >
-                        <SelectTrigger className="h-8 w-[120px]">
-                          <SelectValue placeholder="Select Exam" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="jee">JEE</SelectItem>
-                          <SelectItem value="neet">NEET</SelectItem>
-                          <SelectItem value="upsc">UPSC</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    {renderLineChart()}
-                  </CardContent>
-                  <CardFooter className="border-t border-zinc-200 pt-2 text-xs text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-                    <div className="flex w-full items-center justify-between">
-                      <span>
-                        Starting: {userData.percentiles[examView][0].value}%
-                      </span>
-                      <span className="font-medium text-indigo-600">
-                        +
-                        {userData.percentiles[examView][
-                          userData.percentiles[examView].length - 1
-                        ].value - userData.percentiles[examView][0].value}
-                        % improvement
-                      </span>
-                      <span>
-                        Current:{" "}
-                        {
-                          userData.percentiles[examView][
-                            userData.percentiles[examView].length - 1
-                          ].value
-                        }
-                        %
-                      </span>
-                    </div>
-                  </CardFooter>
-                </Card>
-
-                <Card>
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <Target className="mr-2 h-5 w-5 text-indigo-500" />
-                      Performance Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="mb-2 text-sm font-medium">
-                          Strong Topics
-                        </h3>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                          {userData.statsAnalysis.strongTopics.map(
-                            (topic, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center rounded-lg border border-indigo-200 bg-indigo-50 p-2 dark:border-indigo-900 dark:bg-indigo-900/20"
-                              >
-                                <Medal className="mr-2 h-4 w-4 text-indigo-500" />
-                                <span className="text-sm font-medium">
-                                  {topic}
-                                </span>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="mb-2 text-sm font-medium">
-                          Needs Improvement
-                        </h3>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                          {userData.statsAnalysis.weakTopics.map(
-                            (topic, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center rounded-lg border border-yellow-200 bg-yellow-50 p-2 dark:border-yellow-900 dark:bg-yellow-900/20"
-                              >
-                                <Timer className="mr-2 h-4 w-4 text-yellow-500" />
-                                <span className="text-sm font-medium">
-                                  {topic}
-                                </span>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="mb-2 text-sm font-medium">
-                          Average Solve Time
-                        </h3>
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                            <div className="mb-1 text-sm font-medium text-indigo-500">
-                              Easy
-                            </div>
-                            <div className="flex items-baseline">
-                              <span className="text-xl font-bold">
-                                {userData.statsAnalysis.avgTime.easy}
-                              </span>
-                              <span className="ml-1 text-xs text-zinc-500">
-                                min
-                              </span>
-                            </div>
-                          </div>
-                          <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                            <div className="mb-1 text-sm font-medium text-yellow-500">
-                              Medium
-                            </div>
-                            <div className="flex items-baseline">
-                              <span className="text-xl font-bold">
-                                {userData.statsAnalysis.avgTime.medium}
-                              </span>
-                              <span className="ml-1 text-xs text-zinc-500">
-                                min
-                              </span>
-                            </div>
-                          </div>
-                          <div className="rounded-lg bg-zinc-100 p-3 dark:bg-zinc-800">
-                            <div className="mb-1 text-sm font-medium text-red-500">
-                              Hard
-                            </div>
-                            <div className="flex items-baseline">
-                              <span className="text-xl font-bold">
-                                {userData.statsAnalysis.avgTime.hard}
-                              </span>
-                              <span className="ml-1 text-xs text-zinc-500">
-                                min
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h3 className="mb-2 text-sm font-medium">
-                          Recent Improvement
-                        </h3>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="flex items-center justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                            <div className="flex items-center">
-                              <Calendar className="mr-2 h-4 w-4 text-zinc-500" />
-                              <span className="text-sm">Last Month</span>
-                            </div>
-                            <span className="text-sm font-medium text-indigo-500">
-                              +{userData.statsAnalysis.improvement.lastMonth}%
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                            <div className="flex items-center">
-                              <Calendar className="mr-2 h-4 w-4 text-zinc-500" />
-                              <span className="text-sm">Last Week</span>
-                            </div>
-                            <span className="text-sm font-medium text-indigo-500">
-                              +{userData.statsAnalysis.improvement.lastWeek}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="badges" className="mt-0">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="lg:col-span-3">
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <Award className="mr-2 h-5 w-5 text-indigo-500" />
-                      Your Achievements
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-                      {userData.badges.map((badge) => {
-                        const IconComponent = {
-                          Award: Award,
-                          BookCheck: BookCheck,
-                          Flame: Flame,
-                          Clock: Clock,
-                          Trophy: Trophy,
-                        }[badge.icon];
-
-                        return (
-                          <div
-                            key={badge.id}
-                            className="flex flex-col items-center justify-between rounded-lg border border-zinc-200 p-6 text-center transition-all hover:border-indigo-200 hover:bg-indigo-50/30 dark:border-zinc-700 dark:hover:border-indigo-900 dark:hover:bg-indigo-950/20"
-                          >
-                            <div className="mb-4 rounded-full bg-indigo-100 p-4 dark:bg-indigo-900/40">
-                              {IconComponent && (
-                                <IconComponent className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-                              )}
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-semibold">
-                                {badge.name}
-                              </h3>
-                              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                                Awarded for consistent practice and dedication
+        <TabsContent value="analytics">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Performance Trends Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="mb-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      Overall Score Trend
+                    </h3>
+                    <div className="h-48 w-full rounded-lg bg-zinc-50 p-4 dark:bg-zinc-900">
+                      {/* Placeholder for chart */}
+                      <div className="flex h-full items-center justify-center">
+                        <div className="h-40 w-full rounded-md bg-gradient-to-r from-indigo-500/20 to-purple-500/20 p-4 dark:from-indigo-900/40 dark:to-purple-900/40">
+                          <div className="h-full w-full rounded border border-dashed border-zinc-300 dark:border-zinc-700">
+                            <div className="flex h-full flex-col items-center justify-center">
+                              <BarChart3 className="mb-2 h-8 w-8 text-zinc-400" />
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Score trend visualization
                               </p>
                             </div>
-                            <div className="mt-4">
-                              <Badge className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400">
-                                Earned Feb 2025
-                              </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        Last Month
+                      </div>
+                      <div className="mt-1 text-xl font-semibold text-indigo-600 dark:text-indigo-400">
+                        +{userData.statsAnalysis.improvement.lastMonth}%
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        Last Week
+                      </div>
+                      <div className="mt-1 text-xl font-semibold text-emerald-600 dark:text-emerald-400">
+                        +{userData.statsAnalysis.improvement.lastWeek}%
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                      <div className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                        Consistency
+                      </div>
+                      <div className="mt-1 text-xl font-semibold text-amber-600 dark:text-amber-400">
+                        82%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Subject Comparison Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Subject Comparison</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <h3 className="mb-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                    Performance by Subject
+                  </h3>
+                  <div className="h-48 w-full rounded-lg bg-zinc-50 p-4 dark:bg-zinc-900">
+                    {/* Placeholder for radar chart */}
+                    <div className="flex h-full items-center justify-center">
+                      <div className="h-40 w-full rounded-md bg-gradient-to-r from-indigo-500/20 to-purple-500/20 p-4 dark:from-indigo-900/40 dark:to-purple-900/40">
+                        <div className="h-full w-full rounded border border-dashed border-zinc-300 dark:border-zinc-700">
+                          <div className="flex h-full flex-col items-center justify-center">
+                            <BarChart3 className="mb-2 h-8 w-8 text-zinc-400" />
+                            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                              Subject comparison chart
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                    <div className="text-sm font-medium">Strongest Subject</div>
+                    <Badge className="bg-emerald-600">Physics</Badge>
+                  </div>
+
+                  <div className="mt-2 flex items-center justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+                    <div className="text-sm font-medium">Needs Improvement</div>
+                    <Badge className="bg-amber-600">Chemistry</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Question Type Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Question Type Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        Theory Questions
+                      </span>
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {userData.languages[0].questions} questions
+                      </span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                      <div
+                        className="h-full rounded-full bg-indigo-500"
+                        style={{
+                          width: `${(userData.languages[0].questions / (userData.languages[0].questions + userData.languages[1].questions + userData.languages[2].questions)) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        Numerical Questions
+                      </span>
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {userData.languages[1].questions} questions
+                      </span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                      <div
+                        className="h-full rounded-full bg-purple-500"
+                        style={{
+                          width: `${(userData.languages[1].questions / (userData.languages[0].questions + userData.languages[1].questions + userData.languages[2].questions)) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        Match the Column
+                      </span>
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                        {userData.languages[2].questions} questions
+                      </span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+                      <div
+                        className="h-full rounded-full bg-emerald-500"
+                        style={{
+                          width: `${(userData.languages[2].questions / (userData.languages[0].questions + userData.languages[1].questions + userData.languages[2].questions)) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <h3 className="text-sm font-medium">
+                      Performance Analysis
+                    </h3>
+                    <ul className="mt-2 ml-6 list-disc space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+                      <li>You excel at theory-based questions</li>
+                      <li>Numerical problems show moderate performance</li>
+                      <li>
+                        Focus on improving match-the-column type questions
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Skills Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Skills Assessment</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {userData.skills.map((skill) => (
+                    <div
+                      key={skill.name}
+                      className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{skill.name}</span>
+                        <Badge
+                          className={`${
+                            skill.level === "Advanced"
+                              ? "bg-emerald-600"
+                              : skill.level === "Intermediate"
+                                ? "bg-blue-600"
+                                : "bg-amber-600"
+                          }`}
+                        >
+                          {skill.level}
+                        </Badge>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400">
+                        <span>Problems solved: {skill.count}</span>
+                        <span>Last practiced: 2 days ago</span>
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button className="w-full">
+                    View Detailed Skills Report
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Personalized Recommendations */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Personalized Recommendations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                  <h3 className="font-medium">Study Plan Adjustment</h3>
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    Based on your recent performance, we recommend focusing more
+                    on the following areas:
+                  </p>
+                  <ul className="mt-2 ml-6 list-disc space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    <li>Thermodynamics (Chemistry)</li>
+                    <li>Vectors & 3D Geometry (Mathematics)</li>
+                    <li>Inorganic Chemistry concepts</li>
+                  </ul>
+                </div>
+
+                <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                  <h3 className="font-medium">Test Strategy</h3>
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    To improve your overall performance in tests:
+                  </p>
+                  <ul className="mt-2 ml-6 list-disc space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    <li>Attempt easy and moderate questions first</li>
+                    <li>Allocate specific time slots for each section</li>
+                    <li>Review your answers if time permits</li>
+                    <li>
+                      For numerical problems, verify units in your calculations
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                  <h3 className="font-medium">Practice Recommendation</h3>
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    Based on your performance pattern, increase practice in:
+                  </p>
+                  <ul className="mt-2 ml-6 list-disc space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    <li>Numerical problem-solving (especially in Physics)</li>
+                    <li>NCERT-based conceptual questions</li>
+                    <li>Previous years' JEE questions</li>
+                  </ul>
+                </div>
+
+                <div className="flex justify-center">
+                  <Button className="gap-2">
+                    Generate Detailed Study Plan
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Resources Tab Content */}
+        <TabsContent value="resources">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {/* Study Materials */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Study Materials</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-md bg-blue-100 p-2 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Physics Notes</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Mechanics & Electromagnetism
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <Button size="sm" variant="outline" className="w-full">
+                        View Notes
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-md bg-green-100 p-2 text-green-600 dark:bg-green-900/40 dark:text-green-400">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Chemistry Notes</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Organic & Physical Chemistry
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <Button size="sm" variant="outline" className="w-full">
+                        View Notes
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-md bg-purple-100 p-2 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Mathematics Notes</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Calculus & Coordinate Geometry
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <Button size="sm" variant="outline" className="w-full">
+                        View Notes
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button className="w-full gap-2">
+                    Browse All Materials
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Video Lectures */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Video Lectures</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-12 w-12 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="h-5 w-5 rounded-full bg-red-500"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Advanced Calculus</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Prof. Rakesh Sharma • 12 lectures
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Progress: 8/12
+                      </div>
+                      <Button size="sm" variant="outline">
+                        Continue
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-12 w-12 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="h-5 w-5 rounded-full bg-red-500"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Organic Chemistry</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Dr. Sneha Patel • 15 lectures
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Progress: 3/15
+                      </div>
+                      <Button size="sm" variant="outline">
+                        Continue
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-12 w-12 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="h-5 w-5 rounded-full bg-red-500"></div>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Electrodynamics</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Prof. Amit Singh • 10 lectures
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Progress: 0/10
+                      </div>
+                      <Button size="sm" variant="outline">
+                        Start
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button className="w-full gap-2">
+                    Browse All Lectures
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Question Bank */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Question Bank</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <h3 className="font-medium">JEE Main Previous Years</h3>
+                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                      2000+ questions from past JEE Main exams
+                    </p>
+                    <div className="mt-3">
+                      <Button size="sm" variant="outline" className="w-full">
+                        Practice
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <h3 className="font-medium">JEE Advanced Collection</h3>
+                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                      1500+ questions from past JEE Advanced exams
+                    </p>
+                    <div className="mt-3">
+                      <Button size="sm" variant="outline" className="w-full">
+                        Practice
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <h3 className="font-medium">Topic-wise Questions</h3>
+                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                      Practice questions organized by topics and difficulty
+                    </p>
+                    <div className="mt-3">
+                      <Button size="sm" variant="outline" className="w-full">
+                        Practice
+                      </Button>
+                    </div>
+                  </div>
+
+                  <Button className="w-full gap-2">
+                    Browse All Question Banks
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Featured Resources */}
+          <div className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Featured Resources</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="rounded-md bg-indigo-100 p-3 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400">
+                      <BookOpen className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-3 font-medium">JEE Main Formula Book</h3>
+                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                      Complete collection of formulas for quick revision
+                    </p>
+                    <Button size="sm" className="mt-3 w-full">
+                      Download
+                    </Button>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="rounded-md bg-purple-100 p-3 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400">
+                      <Target className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-3 font-medium">Mock Test Series</h3>
+                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                      Full-length JEE mock tests with detailed analysis
+                    </p>
+                    <Button size="sm" className="mt-3 w-full">
+                      Enroll Now
+                    </Button>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="rounded-md bg-emerald-100 p-3 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+                      <BarChart3 className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-3 font-medium">Performance Analytics</h3>
+                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                      Detailed insights and personalized recommendations
+                    </p>
+                    <Button size="sm" className="mt-3 w-full">
+                      View Report
+                    </Button>
+                  </div>
+
+                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                    <div className="rounded-md bg-amber-100 p-3 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-3 font-medium">Concept Maps</h3>
+                    <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                      Visual representation of key concepts and connections
+                    </p>
+                    <Button size="sm" className="mt-3 w-full">
+                      Explore
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Study Schedule */}
+          <div className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Study Schedule</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                  <Tabs defaultValue="today">
+                    <TabsList className="mb-4">
+                      <TabsTrigger value="today">Today</TabsTrigger>
+                      <TabsTrigger value="tomorrow">Tomorrow</TabsTrigger>
+                      <TabsTrigger value="week">This Week</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="today">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                09:00
+                              </div>
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                10:30
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-indigo-500"></div>
+                            <div>
+                              <h4 className="font-medium">
+                                Physical Chemistry
+                              </h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Thermodynamics & Equilibrium
+                              </p>
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
+                          <Button size="sm" variant="outline">
+                            Start
+                          </Button>
+                        </div>
 
-                <Card className="lg:col-span-2">
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <Trophy className="mr-2 h-5 w-5 text-indigo-500" />
-                      Available Badges
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="flex items-center space-x-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                        <div className="rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
-                          <GraduationCap className="h-6 w-6 text-zinc-500" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-medium">Master Problem Solver</h3>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                            Solve 200 problems
-                          </p>
-                          <Progress
-                            value={(userData.totalSolved / 200) * 100}
-                            className="mt-2 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                          />
-                          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                            Progress: {userData.totalSolved}/200
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                        <div className="rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
-                          <Flame className="h-6 w-6 text-zinc-500" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-medium">100 Day Streak</h3>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                            Practice for 100 consecutive days
-                          </p>
-                          <Progress
-                            value={(userData.streak / 100) * 100}
-                            className="mt-2 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                          />
-                          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                            Progress: {userData.streak}/100
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                        <div className="rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
-                          <Star className="h-6 w-6 text-zinc-500" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-medium">Contest Champion</h3>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                            Rank in top 10% in a contest
-                          </p>
-                          <div className="mt-3 rounded-md bg-zinc-100 px-2 py-1 text-center text-sm dark:bg-zinc-800">
-                            Participate in contests to earn
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                11:00
+                              </div>
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                12:30
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-purple-500"></div>
+                            <div>
+                              <h4 className="font-medium">Calculus Practice</h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Integration & Applications
+                              </p>
+                            </div>
                           </div>
+                          <Button size="sm" variant="outline">
+                            Start
+                          </Button>
                         </div>
-                      </div>
 
-                      <div className="flex items-center space-x-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                        <div className="rounded-full bg-zinc-100 p-3 dark:bg-zinc-800">
-                          <Medal className="h-6 w-6 text-zinc-500" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-medium">Hard Problem Ace</h3>
-                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                            Solve 20 hard problems
-                          </p>
-                          <Progress
-                            value={
-                              (userData.difficultyStats.hard.solved / 20) * 100
-                            }
-                            className="mt-2 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                          />
-                          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                            Progress: {userData.difficultyStats.hard.solved}/20
-                          </p>
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                14:00
+                              </div>
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                16:00
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-emerald-500"></div>
+                            <div>
+                              <h4 className="font-medium">
+                                Physics Problem Solving
+                              </h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Mechanics & Electrodynamics
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline">
+                            Start
+                          </Button>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </TabsContent>
+                    <TabsContent value="tomorrow">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                09:00
+                              </div>
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                11:00
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-purple-500"></div>
+                            <div>
+                              <h4 className="font-medium">
+                                Mathematics Revision
+                              </h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Vectors & 3D Geometry
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" disabled>
+                            Upcoming
+                          </Button>
+                        </div>
 
-                <Card>
-                  <CardHeader className="bg-zinc-100 pb-2 dark:bg-zinc-800/60">
-                    <CardTitle className="flex items-center text-lg">
-                      <Target className="mr-2 h-5 w-5 text-indigo-500" />
-                      Upcoming Goals
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                        <div className="mb-2 flex items-center justify-between">
-                          <h3 className="font-medium">Complete Daily Goal</h3>
-                          <Badge className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400">
-                            Today
-                          </Badge>
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                12:00
+                              </div>
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                13:30
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-emerald-500"></div>
+                            <div>
+                              <h4 className="font-medium">Organic Chemistry</h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Named Reactions & Mechanisms
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" disabled>
+                            Upcoming
+                          </Button>
                         </div>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          Solve at least 3 problems today
-                        </p>
-                        <Progress
-                          value={66}
-                          className="mt-3 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                        />
-                        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                          2/3 completed
-                        </p>
-                      </div>
 
-                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                        <div className="mb-2 flex items-center justify-between">
-                          <h3 className="font-medium">Weekly Challenge</h3>
-                          <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400">
-                            5 days left
-                          </Badge>
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                15:00
+                              </div>
+                              <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                                17:00
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-indigo-500"></div>
+                            <div>
+                              <h4 className="font-medium">
+                                Mock Test Practice
+                              </h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Full JEE Main Pattern Test
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" disabled>
+                            Upcoming
+                          </Button>
                         </div>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          Complete 5 medium difficulty problems
-                        </p>
-                        <Progress
-                          value={40}
-                          className="mt-3 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                        />
-                        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                          2/5 completed
-                        </p>
                       </div>
+                    </TabsContent>
+                    <TabsContent value="week">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="font-medium text-zinc-800 dark:text-zinc-200">
+                                Wed
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-blue-500"></div>
+                            <div>
+                              <h4 className="font-medium">
+                                Revision Day - Physics
+                              </h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Complete syllabus overview
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" disabled>
+                            Upcoming
+                          </Button>
+                        </div>
 
-                      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
-                        <div className="mb-2 flex items-center justify-between">
-                          <h3 className="font-medium">Monthly Target</h3>
-                          <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">
-                            18 days left
-                          </Badge>
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="font-medium text-zinc-800 dark:text-zinc-200">
+                                Thu
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-emerald-500"></div>
+                            <div>
+                              <h4 className="font-medium">
+                                Revision Day - Chemistry
+                              </h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Complete syllabus overview
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" disabled>
+                            Upcoming
+                          </Button>
                         </div>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          Increase contest rating by 50 points
-                        </p>
-                        <Progress
-                          value={30}
-                          className="mt-3 h-1.5 bg-zinc-200 dark:bg-zinc-700"
-                        />
-                        <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                          +15/+50 points
-                        </p>
+
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="font-medium text-zinc-800 dark:text-zinc-200">
+                                Fri
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-purple-500"></div>
+                            <div>
+                              <h4 className="font-medium">
+                                Revision Day - Mathematics
+                              </h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                Complete syllabus overview
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" disabled>
+                            Upcoming
+                          </Button>
+                        </div>
+
+                        <div className="flex items-center justify-between rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="font-medium text-zinc-800 dark:text-zinc-200">
+                                Sat
+                              </div>
+                            </div>
+                            <div className="h-10 w-1 rounded-full bg-amber-500"></div>
+                            <div>
+                              <h4 className="font-medium">Full Mock Test</h4>
+                              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                                JEE Advanced Pattern
+                              </p>
+                            </div>
+                          </div>
+                          <Button size="sm" variant="outline" disabled>
+                            Upcoming
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
+
+                <div className="mt-4 flex justify-between">
+                  <Button variant="outline" className="gap-2">
+                    <Calendar className="h-4 w-4" />
+                    View Full Calendar
+                  </Button>
+                  <Button className="gap-2">
+                    <Settings className="h-4 w-4" />
+                    Customize Schedule
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
-  );
-};
-
-// Navigation Item Component
-const NavItem = ({ icon, text, active, className }) => {
-  return (
-    <button
-      className={`flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-        active
-          ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400"
-          : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-      } ${className || ""}`}
-    >
-      {icon}
-      {text}
-    </button>
   );
 };
 
