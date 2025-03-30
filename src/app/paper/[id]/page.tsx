@@ -113,7 +113,7 @@ const ExamInterface = () => {
   // Update the state initializations to use localStorage
   const { id } = useParams();
   const { data: examData, isLoading } = api.post.getAllPapers.useQuery(
-    (Array.isArray(id) ? id[0] : id) ?? "default-id" // Ensure id is a string or fallback to "default-id"
+    (Array.isArray(id) ? id[0] : id) ?? "default-id", // Ensure id is a string or fallback to "default-id"
   );
 
   const [questionPaper, setQuestionPaper] = useState<QuestionPaperSection[]>(
@@ -834,8 +834,7 @@ const ExamInterface = () => {
                           <p className="text-sm text-zinc-500 dark:text-zinc-400">
                             Average Time Per Question
                           </p>
-                          // Update this part in your JSX where you display the
-                          average time
+
                           <p className="text-2xl font-bold">
                             {formatTime(averageTimePerQuestion)}
                           </p>
@@ -938,9 +937,34 @@ const ExamInterface = () => {
                 {currentQuestion && (
                   <>
                     <div className="mb-4 flex items-center justify-between">
-                      {/* Your existing header */}
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-semibold">
+                          Question {currentQuestionId}{" "}
+                          <span className="text-zinc-500 dark:text-zinc-400">
+                            ({currentQuestion.section})
+                          </span>
+                        </h2>
+                        <Badge
+                          className={getStatusColor(currentQuestion.status)}
+                        >
+                          {currentQuestion.status
+                            .replace(/-/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Time spent:
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="border-zinc-300 bg-transparent text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
+                        >
+                          <Clock className="mr-1 h-3 w-3 text-amber-500 dark:text-amber-400" />
+                          {formatTime(currentQuestion.timeSpent)}
+                        </Badge>
+                      </div>
                     </div>
-
                     {/* Add proper checks and conversions */}
                     <MarkdownQuestionDisplay
                       question={{
@@ -957,7 +981,78 @@ const ExamInterface = () => {
                     />
 
                     <div className="flex flex-wrap justify-between gap-2">
-                      {/* Your existing buttons */}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={goToPrevQuestion}
+                          disabled={currentQuestionId <= 1}
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          <ArrowLeft className="mr-2 h-4 w-4" />
+                          Previous
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={goToNextQuestion}
+                          disabled={currentQuestionId >= stats.total}
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          Next
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={clearResponse}
+                          disabled={
+                            currentQuestion.selectedOption === undefined
+                          }
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Clear
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={toggleMarkForReview}
+                          className={`rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
+                            currentQuestion.status.includes("marked-review")
+                              ? "text-purple-600 dark:text-purple-400"
+                              : ""
+                          }`}
+                        >
+                          <Flag className="mr-2 h-4 w-4" />
+                          {currentQuestion.status.includes("marked-review")
+                            ? "Unmark"
+                            : "Mark for Review"}
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={guessAndNext}
+                          disabled={
+                            currentQuestion.selectedOption === undefined
+                          }
+                          className="rounded-full border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                        >
+                          <LightbulbIcon className="mr-2 h-4 w-4" />
+                          Mark as Guessed
+                        </Button>
+
+                        <Button
+                          variant="default"
+                          onClick={goToNextQuestion}
+                          disabled={currentQuestionId >= stats.total}
+                          className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800"
+                        >
+                          <Save className="mr-2 h-4 w-4" />
+                          Save & Next
+                        </Button>
+                      </div>
                     </div>
                   </>
                 )}
