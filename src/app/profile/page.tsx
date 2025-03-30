@@ -437,7 +437,14 @@ const ProfileDashboard = () => {
             `;
 
             // Extract color name from bg-class
-            const colorName = subject.color.replace("bg-", "");
+            const colorMap: { [key: string]: string } = {
+              "red-500": "#ef4444",
+              "blue-500": "#3b82f6",
+              "green-500": "#10b981",
+              "purple-500": "#8b5cf6",
+              // Add more mappings as needed
+            };
+            const colorName = colorMap[subject.color.replace("bg-", "")] || "#000000"; // Default to black if not found
 
             return (
               <path
@@ -1847,7 +1854,7 @@ const ProfileDashboard = () => {
 };
 
 // Navigation Item Component
-const NavItem = ({ icon, text, active, className }) => {
+const NavItem = ({ icon, text, active, className }:any) => {
   return (
     <button
       className={`flex w-full items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
