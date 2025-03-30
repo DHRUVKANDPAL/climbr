@@ -14,6 +14,7 @@ const page = async () => {
       email: user.emailAddresses[0]?.emailAddress ?? "",
     },
     update: {
+      id: userId,
       imageUrl: user.imageUrl,
       firstName: user.firstName,
       lastName: user.lastName,

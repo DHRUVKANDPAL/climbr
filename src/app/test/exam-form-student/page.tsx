@@ -21,7 +21,7 @@ import { api } from "@/trpc/react";
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   examName: z.string().min(1, "Exam name is required"),
-  userId: z.string().min(1, "User ID is required"),
+  // userId: z.string().min(1, "User ID is required"),
   timeDurationInMinutes: z
     .number()
     .min(1, "Duration must be at least 1 minute"),
@@ -36,7 +36,7 @@ export default function UserExamForm() {
     defaultValues: {
       name: "",
       examName: "",
-      userId: "",
+      // userId: "",
       timeDurationInMinutes: 60,
     },
   });
@@ -94,7 +94,7 @@ export default function UserExamForm() {
               )}
             />
 
-            <FormField
+            {/* <FormField
               control={form.control}
               name="userId"
               render={({ field }) => (
@@ -106,7 +106,7 @@ export default function UserExamForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
 
             <FormField
               control={form.control}

@@ -162,12 +162,16 @@ export const postRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1),
         examName: z.string(),
-        userId: z.string(),
+        // userId: z.string(),
         timeDurationInMinutes: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       //TODO: Generate Question for all sections using promise.allSettled and hitting generateQuestion API
+      const userIdThroughClerk=ctx.user.userId;
+      if(!userIdThroughClerk) throw new Error("User not found")
+      console.log(userIdThroughClerk,"userIdThroughClerk")
+      // console.log(input.userId,"input.userId")
 
       const examDetails = await ctx.db.exams.findFirst({
         where: {
@@ -228,7 +232,7 @@ export const postRouter = createTRPCRouter({
       const paper = await ctx.db.paper.create({
         data: {
           name: input.name,
-          userId: input.userId,
+          userId: userIdThroughClerk,
           timeDurationInMinutes: input.timeDurationInMinutes,
           examId: input.examName.toLowerCase(),
           paperQuestion: {
