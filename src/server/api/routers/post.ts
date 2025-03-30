@@ -258,7 +258,10 @@ export const postRouter = createTRPCRouter({
                         })),
                       },
                       options: {
-                        create: q.questionOptions?.create || [],
+                        create: q.options.map((option: any) => ({
+                          option: option.option,
+                          isCorrect: option.isCorrect,
+                        })),
                       },
                     })),
                   ),
@@ -349,6 +352,7 @@ export const postRouter = createTRPCRouter({
 
 
       const randomRoom = mapping[Math.floor(Math.random() * mapping.length)];
+      console.log(randomRoom?.roomId, "randomRoom");
       return randomRoom?.roomId;
     }),
 });

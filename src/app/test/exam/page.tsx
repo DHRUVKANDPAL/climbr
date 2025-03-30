@@ -5,8 +5,8 @@ import React, { useState } from 'react'
 const page = () => {
    const utils = api.useUtils();
      const [name, setName] = useState("");
-     const { data:examData } = api.post.getAllPapers.useQuery(
-       "cm8vc8tsj0003m50mc49yukds",
+     const { data: examData } = api.post.getAllPapers.useQuery(
+       "cm8vyx0j400019wa9nezb0q66",
      );
      console.log(examData, "examData")
      return (
