@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { 
-  NavigationMenu, 
-  NavigationMenuContent, 
-  NavigationMenuItem, 
-  NavigationMenuLink, 
-  NavigationMenuList, 
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle 
+  navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
@@ -19,6 +19,7 @@ import DarkModeToggle from './DarkModeToggle';
 const NAV_LINKS = [
   { name: "Home", sectionId: "hero" },
   { name: "Features", sectionId: "features" },
+  { name: "Pricing", sectionId: "pricing" },
   { name: "Testimonials", sectionId: "testimonials" },
   // { name: "About", sectionId: "about" }, // Keep this even if section isn't created yet
   { name: "Contact", sectionId: "cta" }
@@ -26,7 +27,7 @@ const NAV_LINKS = [
 
 const Navbar = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
+  
   // Function to handle smooth scrolling
   const scrollToSection = (sectionId:any) => {
     const element = document.getElementById(sectionId);
@@ -36,13 +37,13 @@ const Navbar = () => {
       setIsSheetOpen(false);
     }
   };
-
+  
   return (
     <header className="w-full bg-white dark:bg-zinc-900 shadow-sm fixed top-0 z-50">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Logo />
-
+        
         {/* Desktop Navigation */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
@@ -58,12 +59,12 @@ const Navbar = () => {
             ))}
           </NavigationMenuList>
         </NavigationMenu>
-
+        
         {/* Mobile Navigation */}
         <div className="flex items-center space-x-4">
           {/* Dark Mode Toggle */}
           <DarkModeToggle />
-
+          
           {/* Mobile Menu Sheet */}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger className="md:hidden">

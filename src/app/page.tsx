@@ -9,6 +9,7 @@ import Features from "@/components/Features";
 import TestimonialCarousel from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import CallToAction from "@/components/CTA";
+import PricingComponent from "@/components/Premium";
 
 export default async function Home() {
   return (
@@ -21,6 +22,7 @@ export default async function Home() {
         <TestimonialCarousel />
         <CallToAction />
         {/* <ExamMarquee /> */}
+        <PricingComponent/>
         <Footer />
       </main>
     </HydrateClient>
