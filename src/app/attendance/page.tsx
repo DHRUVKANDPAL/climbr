@@ -336,6 +336,15 @@ const OmegleForStudents: React.FC = () => {
   const [mentalHealthSearchClicked, setMentalHealthSearchClicked] = useState<boolean>(false);
   const [filteredCounselors, setFilteredCounselors] = useState<any[]>([]);
 
+  const [translationMode, setTranslationMode] = useState<'advisee' | 'advisor'>('advisee');
+  const [advisorLanguages, setAdvisorLanguages] = useState<string[]>([]);
+  const [isMatching, setIsMatching] = useState<boolean>(false);
+  const [matchFound, setMatchFound] = useState<boolean>(false);
+  const [matchedAdvisor, setMatchedAdvisor] = useState<LanguageTranslator | null>(null);
+
+  const [meetingRequests, setMeetingRequests] = useState<{advisorId: string, adviseeName: string, fromLanguage: string, toLanguage: string}[]>([]);
+  const [currentMeetingRequest, setCurrentMeetingRequest] = useState<null | {advisorId: string, adviseeName: string}>(null);
+
   // State for language translation
   const [fromLanguage, setFromLanguage] = useState<string>("");
   const [toLanguage, setToLanguage] = useState<string>("");
@@ -344,6 +353,93 @@ const OmegleForStudents: React.FC = () => {
 
   // State for active section
   const [activeSection, setActiveSection] = useState<'exams' | 'translation'>('exams');
+
+  const toggleAdvisorLanguage = (language: string) => {
+    if (advisorLanguages.includes(language)) {
+      setAdvisorLanguages(advisorLanguages.filter(lang => lang !== language));
+    } else {
+      setAdvisorLanguages([...advisorLanguages, language]);
+    }
+  };
+  const simulateMatching = () => {
+    setIsMatching(true);
+    setFilteredTranslators([]);
+    setTranslationSearchClicked(false);
+    
+    // Simulate a delay to represent background matching
+    setTimeout(() => {
+      const randomMatch = translatorsData[Math.floor(Math.random() * translatorsData.length)];
+      setMatchedAdvisor(randomMatch);
+      setIsMatching(false);
+      setMatchFound(true);
+    }, 3000); // 3 second delay
+  };
+
+
+  const handleTranslationSearch = () => {
+    if (translationMode === 'advisee') {
+      if (fromLanguage && toLanguage) {
+        // Create a meeting request
+        const request = {
+          advisorId: "random-advisor", // In real app, this would match with an actual advisor
+          adviseeName: "User", // Would be the logged in user's name
+          fromLanguage,
+          toLanguage
+        };
+        setMeetingRequests([...meetingRequests, request]);
+        simulateMatching();
+      } else {
+        // Regular search if languages aren't fully specified
+        if (!fromLanguage && !toLanguage) {
+          setFilteredTranslators(translatorsData);
+        } else {
+          const filtered = translatorsData.filter(translator => {
+            const matchesFrom = !fromLanguage || translator.fromLanguages.includes(fromLanguage);
+            const matchesTo = !toLanguage || translator.toLanguages.includes(toLanguage);
+            return matchesFrom && matchesTo;
+          });
+          setFilteredTranslators(filtered);
+        }
+        setTranslationSearchClicked(true);
+        setActiveSection('translation');
+        setSearchClicked(false);
+      }
+    } else {
+      // For advisors, update their status as available
+      console.log("Advisor available for languages:", advisorLanguages);
+      // In a real app, this would update a database
+      alert("You're now listed as available for these languages: " + advisorLanguages.join(", "));
+    }
+  };
+
+  const AdvisorMeetingRequests = ({ requests, onAccept }: { 
+    requests: {advisorId: string, adviseeName: string, fromLanguage: string, toLanguage: string}[], 
+    onAccept: (request: {advisorId: string, adviseeName: string}) => void 
+  }) => {
+    if (requests.length === 0) return null;
+  
+    return (
+      <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-lg mt-6">
+        <h3 className="text-indigo-800 dark:text-zinc-200 text-lg font-semibold mb-4">
+          Meeting Requests
+        </h3>
+        {requests.map((request, index) => (
+          <div key={index} className="border-b border-indigo-200 dark:border-zinc-700 pb-4 mb-4">
+            <p className="text-indigo-700 dark:text-zinc-300">
+              <span className="font-medium">{request.adviseeName}</span> wants help translating from {request.fromLanguage} to {request.toLanguage}
+            </p>
+            <button
+              onClick={() => onAccept(request)}
+              className="mt-2 bg-gradient-to-r from-indigo-500 to-indigo-700 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2"
+            >
+              <Video size={16} />
+              Accept & Start Meeting
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   // Handle label selection
   const toggleLabel = (labelName: string) => {
@@ -370,21 +466,6 @@ const OmegleForStudents: React.FC = () => {
   };
 
   // Handle search for language translators
-  const handleTranslationSearch = () => {
-    if (!fromLanguage && !toLanguage) {
-      setFilteredTranslators(translatorsData);
-    } else {
-      const filtered = translatorsData.filter(translator => {
-        const matchesFrom = !fromLanguage || translator.fromLanguages.includes(fromLanguage);
-        const matchesTo = !toLanguage || translator.toLanguages.includes(toLanguage);
-        return matchesFrom && matchesTo;
-      });
-      setFilteredTranslators(filtered);
-    }
-    setTranslationSearchClicked(true);
-    setActiveSection('translation');
-    setSearchClicked(false);
-  };
 
   // Handle consultation
   const handleConsult = (consultantId: string) => {
@@ -574,129 +655,266 @@ const OmegleForStudents: React.FC = () => {
 
         {/* Language Translation Section */}
         {activeSection === 'translation' && (
-          <>
-            <AnimatedHeading text="Find Your Language Translation Counselor" />
-            <section className="max-w-5xl mx-auto px-4 py-4">
-              <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-lg">
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-                  <div className="md:col-span-2">
-                    <LanguageDropdown 
-                      label="Translate From" 
-                      options={availableLanguages} 
-                      selected={fromLanguage} 
-                      onChange={setFromLanguage} 
-                    />
+  <>
+    <AnimatedHeading text="Find Your Language Translation Counselor" />
+    
+    <div className="flex justify-center mb-6">
+      <div className="bg-white dark:bg-zinc-800 rounded-full shadow-md p-1 max-w-md w-full flex">
+        <button
+          onClick={() => {
+            setTranslationMode('advisee');
+            setMatchFound(false);
+            setIsMatching(false);
+          }}
+          className={`flex-1 py-2 px-4 rounded-full font-medium transition-all duration-200 ${
+            translationMode === 'advisee'
+              ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-500 dark:to-indigo-700 text-white shadow-lg'
+              : 'text-indigo-700 dark:text-zinc-300 hover:bg-indigo-100 dark:hover:bg-zinc-700'
+          }`}
+        >
+          I Need Help
+        </button>
+        <button
+          onClick={() => {
+            setTranslationMode('advisor');
+            setMatchFound(false);
+            setIsMatching(false);
+          }}
+          className={`flex-1 py-2 px-4 rounded-full font-medium transition-all duration-200 ${
+            translationMode === 'advisor'
+              ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-500 dark:to-indigo-700 text-white shadow-lg'
+              : 'text-indigo-700 dark:text-zinc-300 hover:bg-indigo-100 dark:hover:bg-zinc-700'
+          }`}
+        >
+          I Can Help
+        </button>
+      </div>
+    </div>
+    
+    <section className="max-w-5xl mx-auto px-4 py-4">
+      {translationMode === 'advisee' ? (
+        // ADVISEE MODE
+        <>
+          {isMatching ? (
+            // Matching in progress
+            <div className="bg-white dark:bg-zinc-800 rounded-xl p-10 shadow-lg text-center">
+              <div className="flex flex-col items-center justify-center">
+                <div className="relative w-20 h-20 mb-4">
+                  <div className="absolute inset-0 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin"></div>
+                </div>
+                <h3 className="text-xl font-semibold text-indigo-800 dark:text-zinc-200 mb-2">
+                  Request sent to advisors...
+                </h3>
+                <p className="text-indigo-600 dark:text-zinc-400">
+                  Waiting for an advisor to accept your meeting request
+                </p>
+              </div>
+            </div>
+          ) : matchFound && matchedAdvisor ? (
+            // Match found
+            <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-lg">
+              <div className="p-4 mb-4 bg-green-100 dark:bg-green-900/30 rounded-lg text-center">
+                <h3 className="text-green-700 dark:text-green-400 font-medium">Match Found!</h3>
+                <p className="text-green-600 dark:text-green-300">An advisor is available to help you right now</p>
+              </div>
+              
+              <div className="flex items-center gap-4 p-4 border border-indigo-200 dark:border-zinc-700 rounded-lg">
+                <img 
+                  src={matchedAdvisor.avatar} 
+                  alt={matchedAdvisor.name} 
+                  className="w-16 h-16 rounded-full object-cover border-2 border-indigo-300 dark:border-indigo-300"
+                />
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-indigo-800 dark:text-zinc-200">{matchedAdvisor.name}</h3>
+                  <div className="flex text-yellow-500 mt-1">
+                    {renderStars(matchedAdvisor.rating)}
+                    <span className="text-indigo-600 dark:text-zinc-400 ml-2">({matchedAdvisor.rating})</span>
                   </div>
-                  
-                  <div className="flex justify-center md:col-span-1">
-                    <TranslationArrow />
-                  </div>
-                  
-                  <div className="md:col-span-2">
-                    <LanguageDropdown 
-                      label="Translate To" 
-                      options={availableLanguages} 
-                      selected={toLanguage} 
-                      onChange={setToLanguage} 
-                    />
-                  </div>
+                  <div className="text-indigo-600 dark:text-zinc-400 text-sm mt-1">Experience: {matchedAdvisor.experience}</div>
+                </div>
+                <button
+                  onClick={() => handleConsult(matchedAdvisor.id)}
+                  className="bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-500 dark:to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2"
+                >
+                  <Video size={20} />
+                  Start Meeting
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Regular language selection UI
+            <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-lg">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
+                <div className="md:col-span-2">
+                  <LanguageDropdown 
+                    label="Translate From" 
+                    options={availableLanguages} 
+                    selected={fromLanguage} 
+                    onChange={setFromLanguage} 
+                  />
                 </div>
                 
-                <div className="flex justify-center mt-8">
-                  <button
-                    onClick={handleTranslationSearch}
-                    className="bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-500 dark:to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 dark:hover:from-indigo-600 dark:hover:to-indigo-800 text-white px-6 py-3 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
-                  >
-                    <Globe size={20} />
-                    Find Language Counselors
-                  </button>
+                <div className="flex justify-center md:col-span-1">
+                  <TranslationArrow />
+                </div>
+                
+                <div className="md:col-span-2">
+                  <LanguageDropdown 
+                    label="Translate To" 
+                    options={availableLanguages} 
+                    selected={toLanguage} 
+                    onChange={setToLanguage} 
+                  />
                 </div>
               </div>
-            </section>
-
-            {/* Results Section for Language Translators */}
-            {translationSearchClicked && (
-              <section className="max-w-5xl mx-auto px-4 py-8">
-                <h2 className="text-indigo-800 dark:text-zinc-200 text-2xl font-semibold mb-6">Available Language Counselors:</h2>
-                
-                {filteredTranslators.length === 0 ? (
-                  <div className="bg-indigo-100/50 dark:bg-zinc-800/50 rounded-xl p-8 text-center">
-                    <p className="text-indigo-700 dark:text-zinc-300 text-lg">No language counselors found for this combination. Please try different languages.</p>
-                  </div>
-                ) : (
-                  <div className="grid gap-6 md:grid-cols-2">
-                    {filteredTranslators.map((translator) => (
-                      <div 
-                      key={translator.id} 
-                      className="bg-gradient-to-br from-indigo-500/90 via-indigo-600/90 to-indigo-700/90 dark:from-zinc-700/90 dark:via-zinc-800/90 dark:to-zinc-900/90 backdrop-blur-md rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-103"
-                    >
-                        <div className="p-6">
-                          <div className="flex items-center gap-4">
-                            <img 
-                              src={translator.avatar} 
-                              alt={translator.name} 
-                              className="w-16 h-16 rounded-full object-cover border-2 border-indigo-300 dark:border-indigo-300"
-                            />
-                            <div>
-                              <h3 className="text-xl font-bold text-white">{translator.name}</h3>
-                              <div className="flex text-yellow-300 mt-1">
-                                {renderStars(translator.rating)}
-                                <span className="text-indigo-200 ml-2">({translator.rating})</span>
-                              </div>
-                              <div className="text-indigo-200 text-sm mt-1">Experience: {translator.experience}</div>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4 grid grid-cols-2 gap-4">
-                            <div>
-                              <h4 className="text-indigo-200 text-sm font-medium mb-1">From Languages:</h4>
-                              <div className="flex flex-wrap gap-1">
-                                {translator.fromLanguages.map((lang, index) => (
-                                  <span 
-                                    key={index} 
-                                    className="text-xs px-2 py-1 rounded-full bg-indigo-400/40 dark:bg-indigo-400/40 text-white"
-                                  >
-                                    {lang}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                            <div>
-                              <h4 className="text-indigo-200 text-sm font-medium mb-1">To Languages:</h4>
-                              <div className="flex flex-wrap gap-1">
-                                {translator.toLanguages.map((lang, index) => (
-                                  <span 
-                                    key={index} 
-                                    className="text-xs px-2 py-1 rounded-full bg-indigo-400/30 dark:bg-indigo-400/30 text-white"
-                                  >
-                                    {lang}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-6 flex justify-between items-center">
-                            <div className="text-indigo-200 dark:text-indigo-200 font-bold">
-                              ₹{translator.price} <span className="text-xs text-indigo-300 dark:text-indigo-300 font-normal">per session</span>
-                            </div>
-                            <button
-                              onClick={() => handleConsult(translator.id)}
-                              className="bg-white/20 hover:bg-white/30 dark:bg-white/20 dark:hover:bg-white/30 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2 transition-all duration-200"
-                            >
-                              <Video size={16} />
-                              Consult Now
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </section>
+              
+              <div className="flex justify-center mt-8">
+              <button
+                onClick={handleTranslationSearch}
+                className="relative bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-500 dark:to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 dark:hover:from-indigo-600 dark:hover:to-indigo-800 text-white px-6 py-3 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
+              >
+                <Languages size={20} />
+                Search Translators
+              </button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        // ADVISOR MODE
+        <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 shadow-lg">
+          <h2 className="text-indigo-800 dark:text-zinc-200 text-xl font-semibold mb-4">Select languages you can translate:</h2>
+          
+          <div className="mb-6">
+            <h3 className="text-indigo-700 dark:text-zinc-300 text-md font-medium mb-3">I can translate between these languages:</h3>
+            <div className="flex flex-wrap gap-2">
+              {availableLanguages.map((language) => (
+                <button
+                  key={`adv-${language}`}
+                  onClick={() => toggleAdvisorLanguage(language)}
+                  className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
+                    advisorLanguages.includes(language)
+                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-500 dark:to-indigo-700 text-white shadow-lg transform scale-105'
+                      : 'bg-indigo-100 dark:bg-zinc-700 text-indigo-700 dark:text-zinc-300 hover:bg-indigo-200 dark:hover:bg-zinc-600'
+                  }`}
+                >
+                  {language}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={handleTranslationSearch}
+              className={`relative bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-indigo-500 dark:to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 dark:hover:from-indigo-600 dark:hover:to-indigo-800 text-white px-10 py-3 rounded-full shadow-lg transform hover:scale-105 transition-all duration-200 flex items-center gap-2 max-h-12 ${
+                advisorLanguages.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              disabled={advisorLanguages.length === 0}
+            >
+              <Languages size={20} />
+              {advisorLanguages.length === 0 ? 'Select Languages First' : 'Make Me Available'}
+            </button>
+            
+            {translationMode === 'advisor' && (
+              <div className="ml-4">
+                <AdvisorMeetingRequests 
+                  requests={meetingRequests.filter(r => r.advisorId === "random-advisor")} 
+                  onAccept={(request) => {
+                    setCurrentMeetingRequest(request);
+                    alert(`Starting meeting with ${request.adviseeName}`);
+                  }}
+                />
+              </div>
             )}
-          </>
+          </div>
+        </div>
+      )}
+    </section>
+
+    {/* Results Section for Language Translators - only show when not matching */}
+    {translationSearchClicked && !isMatching && !matchFound && (
+      <section className="max-w-5xl mx-auto px-4 py-8">
+        <h2 className="text-indigo-800 dark:text-zinc-200 text-2xl font-semibold mb-6">Available Language Counselors:</h2>
+        
+        {filteredTranslators.length === 0 ? (
+          <div className="bg-indigo-100/50 dark:bg-zinc-800/50 rounded-xl p-8 text-center">
+            <p className="text-indigo-700 dark:text-zinc-300 text-lg">No language counselors found for this combination. Please try different languages.</p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2">
+            {filteredTranslators.map((translator) => (
+              <div 
+                key={translator.id} 
+                className="bg-gradient-to-br from-indigo-500/90 via-indigo-600/90 to-indigo-700/90 dark:from-zinc-700/90 dark:via-zinc-800/90 dark:to-zinc-900/90 backdrop-blur-md rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:transform hover:scale-103"
+              >
+                <div className="p-6">
+                  <div className="flex items-center gap-4">
+                    <img 
+                      src={translator.avatar} 
+                      alt={translator.name} 
+                      className="w-16 h-16 rounded-full object-cover border-2 border-indigo-300 dark:border-indigo-300"
+                    />
+                    <div>
+                      <h3 className="text-xl font-bold text-white">{translator.name}</h3>
+                      <div className="flex text-yellow-300 mt-1">
+                        {renderStars(translator.rating)}
+                        <span className="text-indigo-200 ml-2">({translator.rating})</span>
+                      </div>
+                      <div className="text-indigo-200 text-sm mt-1">Experience: {translator.experience}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="text-indigo-200 text-sm font-medium mb-1">From Languages:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {translator.fromLanguages.map((lang, index) => (
+                          <span 
+                            key={index} 
+                            className="text-xs px-2 py-1 rounded-full bg-indigo-400/40 dark:bg-indigo-400/40 text-white"
+                          >
+                            {lang}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-indigo-200 text-sm font-medium mb-1">To Languages:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {translator.toLanguages.map((lang, index) => (
+                          <span 
+                            key={index} 
+                            className="text-xs px-2 py-1 rounded-full bg-indigo-400/30 dark:bg-indigo-400/30 text-white"
+                          >
+                            {lang}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 flex justify-between items-center">
+                    <div className="text-indigo-200 dark:text-indigo-200 font-bold">
+                      ₹{translator.price} <span className="text-xs text-indigo-300 dark:text-indigo-300 font-normal">per session</span>
+                    </div>
+                    <button
+                      onClick={() => handleConsult(translator.id)}
+                      className="bg-white/20 hover:bg-white/30 dark:bg-white/20 dark:hover:bg-white/30 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2 transition-all duration-200"
+                    >
+                      <Video size={16} />
+                      Consult Now
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
+      </section>
+    )}
+  </>
+)}
         {activeSection === 'mentalHealth' && (
   <>
     <AnimatedHeading text="Mental Health Support for Students" />
@@ -720,7 +938,7 @@ const OmegleForStudents: React.FC = () => {
             onClick={() => setSelectedMentalHealthExam(label.name)}
             className={`px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
               selectedMentalHealthExam === label.name
-                ? 'bg-gradient-to-r from-indigo-500 to-indigo-700 dark:from-zinc-600 dark:to-zinc-800 text-white shadow-lg transform scale-105'
+                ? 'bg-gradient-to-r from-violet-500 to-violet-700 dark:from-violet-600 dark:to-violet-800 text-white shadow-lg transform scale-105'
                 : 'bg-indigo-100 dark:bg-zinc-700 text-indigo-700 dark:text-zinc-300 hover:bg-indigo-200 dark:hover:bg-zinc-600'
             }`}
           >
@@ -804,9 +1022,9 @@ const OmegleForStudents: React.FC = () => {
                   </div>
                   
                   <div className="mt-6 flex justify-between items-center">
-                    <div className="text-indigo-200 dark:text-zinc-200 font-bold">
+                    {/* <div className="text-indigo-200 dark:text-zinc-200 font-bold">
                       ₹{counselor.price} <span className="text-xs text-indigo-300 dark:text-zinc-400 font-normal">per session</span>
-                    </div>
+                    </div> */}
                     <button
                       onClick={() => handleConsult(counselor.id)}
                       className="bg-white/20 hover:bg-white/30 dark:bg-white/10 dark:hover:bg-white/20 text-white px-4 py-2 rounded-lg shadow flex items-center gap-2 transition-all duration-200"
