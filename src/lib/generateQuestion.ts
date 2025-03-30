@@ -51,7 +51,8 @@ Generate ${numberOfQuestions} high-quality multiple-choice questions (MCQs) for 
 - PLEASE PROVIDE EVERY STRING IN MARKDOWN FORMAT.
 - The **examId** should be the name of the exam, which is '${examName}'.
 - Label question difficulty accordingly as 'Easy', 'Medium', or 'Hard'.
-
+-If the section type is 'Numericals', please generate questions accordingly. and options arrays should contain only one option with the correct answer.
+- If the section type is 'MCQ', please generate questions accordingly. and options arrays should contain four options with one correct answer.
 Now, generate the ${sectionType} based on the above requirements.
    `;
    const response = await ai.models.generateContent({

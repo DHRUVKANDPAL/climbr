@@ -1,7 +1,7 @@
 import { db } from "@/server/db";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { notFound, redirect } from "next/navigation";
-import React from "react";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
+
 
 const page = async () => {
   const { userId } = await auth();
@@ -26,7 +26,7 @@ const page = async () => {
       lastName: user.lastName,
     },
   });
-  return redirect("/");
+  return permanentRedirect("/profile");
 };
 
 export default page;

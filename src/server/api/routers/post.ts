@@ -7,6 +7,37 @@ import {
 } from "@/server/api/trpc";
 import generateQuestions from "@/lib/generateQuestion";
 
+
+function transformData(papers: any, examDetails: any) {
+  const subjects = examDetails.subjects.map((subject: any) => {
+    // Filter questions for the current subject
+    const subjectQuestions = papers.paperQuestion.questions.filter(
+      (question: any) =>
+        question.subject.some((sub: any) => sub.name === subject.name),
+    );
+
+    // Group questions by section type
+    const sections = examDetails.section.map((section: any) => {
+      const sectionQuestions = subjectQuestions.filter(
+        (question: any) => question.type === section.type,
+      );
+
+      return {
+        type: section.type,
+        questions: sectionQuestions,
+      };
+    });
+
+    return {
+      name: subject.name,
+      sections,
+    };
+  });
+
+  return { subjects };
+}
+
+
 export const postRouter = createTRPCRouter({
   hello: protectedProdcedure.query(async ({ ctx }) => {
     return await ctx.db.post.findFirst({
@@ -201,36 +232,86 @@ export const postRouter = createTRPCRouter({
           timeDurationInMinutes: input.timeDurationInMinutes,
           examId: input.examName.toLowerCase(),
           paperQuestion: {
-            create: questions.map((question: any, index) => ({
+            create: {
               questions: {
-                create: {
-                  question: question.value.questions[index].question,
-                  examId: question.value.questions[index].examId,
-                  subject: {
-                    connectOrCreate: question.value.questions[
-                      index
-                    ].subject.map((name: any) => ({
-                      where: { name: name },
-                      create: { name },
+                create: questions
+                  .filter((q) => q.status === "fulfilled")
+                  .flatMap((question: any) =>
+                    question.value.questions.map((q: any) => ({
+                      question: q.question,
+                      type: question.value.type,
+                      examId: q.examId,
+                      subject: {
+                        connectOrCreate: q.subject.map((name: string) => ({
+                          where: { name },
+                          create: { name },
+                        })),
+                      },
+                      difficulty: q.difficulty,
+                      explanation: q.explanation,
+                      topic: {
+                        connectOrCreate: q.topic.map((name: string) => ({
+                          where: { name },
+                          create: { name },
+                        })),
+                      },
+                      options: {
+                        create: q.questionOptions?.create || [],
+                      },
                     })),
-                  },
-                  difficulty: question.value.questions[index].difficulty,
-                  explanation: question.value.questions[index].explanation,
-                  topic: {
-                    connectOrCreate: question.value.questions[index].topic.map(
-                      (name: any) => ({
-                        where: { name: name },
-                        create: { name },
-                      }),
-                    ),
-                  },
+                  ),
+              },
+            },
+          },
+        },
+        include: {
+          paperQuestion: {
+            include: {
+              questions: {
+                include: {
+                  subject: true,
+                  topic: true,
+                  options: true,
                 },
               },
-            })),
+            },
           },
         },
       });
 
       return paper;
     }),
+
+  getAllPapers: protectedProdcedure.input(z.string()).query(async ({ ctx,input }) => {
+    const papers = await ctx.db.paper.findUnique({
+      where: {
+        id: input,
+      },
+      include: {
+        paperQuestion: {
+          include: {
+            questions: {
+              include: {
+                subject: true,
+                topic: true,
+                options: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const examDetails = await ctx.db.exams.findFirst({
+      where: { id: papers?.examId },
+      include: {
+        section: true,
+        subjects: true,
+      },
+    });
+    const transformedData = transformData(papers, examDetails);
+    console.log(JSON.stringify(transformedData, null, 2));
+    // console.log({ message: input, papers, examDetails });
+    return transformedData;
+  }),
 });

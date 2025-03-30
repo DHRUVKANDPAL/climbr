@@ -78,6 +78,7 @@ model Question {
     subject          Subjects[]
     difficulty       DifficultyLevel     @default(Medium)
     explanation      String?
+    type Type @default(MCQ)
     questionAnalytic QuestionAnalytics[]
     topic            Topic[]
     options          Options[]

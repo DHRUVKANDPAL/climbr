@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { api } from "@/trpc/react";
 
 // Define the schema for the form
 const formSchema = z.object({
@@ -39,11 +40,21 @@ export default function UserExamForm() {
       timeDurationInMinutes: 60,
     },
   });
-
+  const submitForm = api.post.createPaper.useMutation();
   // Submit handler
   const onSubmit = (data: FormValues) => {
     console.log(data);
     // Add your submission logic here
+    submitForm.mutate(data, {
+      onSuccess: (data) => {
+        console.log("Paper Created:", data);
+        alert("Paper created successfully!");
+      },
+      onError: (error) => {
+        console.error("Error:", error);
+        alert("Failed to create paper!");
+      },
+    });
     alert("Form submitted: " + JSON.stringify(data, null, 2));
   };
 
