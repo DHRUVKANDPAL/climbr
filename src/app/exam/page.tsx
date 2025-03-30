@@ -1,6 +1,6 @@
 "use client";
 // ExamInterface.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -108,364 +108,208 @@ type QuestionPaperSection = {
   questions: Question[];
 };
 
-// Sample data
-// Sample question data with markdown formatting
-// Replace the existing generateSampleData function with this one
-const generateSampleData = (): QuestionPaperSection[] => {
-  // This is your structured question data
-  const examData = {
-    subjects: [
-      {
-        name: "Mathematics",
-        sections: [
-          {
-            type: "MCQ",
-            questions: [
-              {
-                id: "cm8vc8tsj0005m50m8q52ntls",
-                question:
-                  "The range of the function $f(x) = \\sin^2(x) + \\sin^2(x + \\frac{\\pi}{3}) + \\cos(x)\\cos(x + \\frac{\\pi}{3})$ is:",
-                examId: "jee",
-                difficulty: "Medium",
-                explanation:
-                  "Let $f(x) = \\sin^2(x) + \\sin^2(x + \\frac{\\pi}{3}) + \\cos(x)\\cos(x + \\frac{\\pi}{3})$. Using trigonometric identities, we can simplify $f(x)$ to a constant value. Expanding $\\sin^2(x + \\frac{\\pi}{3})$ and $\\cos(x + \\frac{\\pi}{3})$ and simplifying using $\\sin^2(x) + \\cos^2(x) = 1$ and other trigonometric relationships reveals that $f(x) = \\frac{3}{2}$. Hence, the range is a singleton set {$\\frac{3}{2}$}.",
-                options: [
-                  "A) ${0}$",
-                  "B) ${1}$",
-                  "C) ${\\frac{3}{2}}$",
-                  "D) ${2}$",
-                ],
-              },
-              {
-                id: "cm8vc8tsk0009m50mesg5eikk",
-                question:
-                  "The distance of the plane $x + 2y - z = 4$ from the origin is:",
-                examId: "jee",
-                difficulty: "Hard",
-                explanation:
-                  "The given equation represents a plane. The distance 'd' of the plane from the origin is given by  $d = |(a(0) + b(0) + c(0) - k)| / sqrt(a^2 + b^2 + c^2)$, which simplifies to $|k| / sqrt(a^2 + b^2 + c^2)$. Here, the equation is $x + 2y - z = 4$.  So, $a = 1$, $b = 2$, $c = -1$, and $k = 4$. Therefore, the distance d = $|4| / sqrt(1^2 + 2^2 + (-1)^2) = 4 / sqrt(6) = (4 * sqrt{6}) / 6 = (2 * sqrt{6}) / 3$. Rationalizing gives (2√6)/3",
-                options: [
-                  "A) $\\frac{2\\sqrt{6}}{3}$",
-                  "B) $\\frac{4\\sqrt{6}}{3}$",
-                  "C) $\\frac{\\sqrt{6}}{3}$",
-                  "D) $\\frac{4\\sqrt{3}}{6}$",
-                ],
-              },
-              {
-                id: "cm8vc8tsk000vm50msm5h26bk",
-                question:
-                  "Evaluate the definite integral: ∫₀^(π/2) (cos³x) / (sin³x + cos³x) dx",
-                examId: "jee",
-                difficulty: "Medium",
-                explanation:
-                  "Let the given integral be I.  Using the property ∫ₐᵇ f(x) dx = ∫ₐᵇ f(a+b-x) dx, we have I = ∫₀^(π/2) (sin³x) / (sin³x + cos³x) dx.  Adding the two forms of I gives 2I = ∫₀^(π/2) 1 dx = π/2, hence I = π/4.",
-                options: [
-                  "A) $\\frac{\\pi}{4}$",
-                  "B) $\\frac{\\pi}{2}$",
-                  "C) $\\pi$",
-                  "D) $2\\pi$",
-                ],
-              },
-              {
-                id: "cm8vc8tsk000ym50mt7cj6yld",
-                question: "Evaluate the indefinite integral: ∫1 / (x² + 4) dx",
-                examId: "jee",
-                difficulty: "Hard",
-                explanation:
-                  "Let x = tan θ, then dx = sec² θ dθ.  The integral becomes ∫(sec² θ) / (tan² θ + 4) dθ = ∫(1 + tan² θ) / (tan² θ + 4) dθ = ∫(tan² θ + 4 - 3) / (tan² θ + 4) dθ = ∫(1 - 3 / (tan² θ + 4)) dθ = θ - (3/2) * (1/2)arctan(tan(θ)/2) + C = arctan(x) - (3/4)arctan(x/2) + C",
-                options: [
-                  "A) $\\arctan(x) - \\frac{3}{4}\\arctan(\\frac{x}{2}) + C$",
-                  "B) $\\frac{1}{2}\\arctan(\\frac{x}{2}) + C$",
-                  "C) $\\arctan(x) + C$",
-                  "D) $\\frac{1}{4}\\arctan(\\frac{x}{4}) + C$",
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Physics",
-        sections: [
-          {
-            type: "MCQ",
-            questions: [
-              {
-                id: "cm8vc8tsk000dm50m1lko7qzp",
-                question:
-                  "A long, straight wire carries a steady current. If the distance from the wire is doubled, what happens to the strength of the magnetic field?",
-                examId: "jee",
-                difficulty: "Medium",
-                explanation:
-                  "The magnetic field due to a current-carrying wire is inversely proportional to the distance from the wire. Therefore, doubling the distance will halve the magnetic field strength.",
-                options: [
-                  "A) It becomes half",
-                  "B) It becomes double",
-                  "C) It becomes one-fourth",
-                  "D) It remains the same",
-                ],
-              },
-              {
-                id: "cm8vc8tsk000hm50moz0erypd",
-                question:
-                  "In a photoelectric effect experiment, if the frequency of the incident light is doubled, what happens to the maximum kinetic energy of the emitted electrons?",
-                examId: "jee",
-                difficulty: "Hard",
-                explanation:
-                  "The work function is the minimum energy required to remove an electron from the surface of a metal. The maximum kinetic energy of the emitted electron is given by KE = hf - Φ, where h is Planck's constant, f is the frequency of the incident light, and Φ is the work function.  If the frequency is doubled, the new kinetic energy will be KE' = h(2f) - Φ = 2hf - Φ.  Since KE = hf - Φ, then hf = KE + Φ. Substituting this into the equation for KE', we get KE' = 2(KE + Φ) - Φ = 2KE + Φ.  Therefore, the new kinetic energy is twice the initial kinetic energy plus the work function.",
-                options: [
-                  "A) It doubles",
-                  "B) It becomes 2KE + Φ",
-                  "C) It remains the same",
-                  "D) It increases by a factor of 4",
-                ],
-              },
-              {
-                id: "cm8vc8tsl0011m50majqq7m4d",
-                question:
-                  "A rectangular block of wood has a density of 600 kg/m³. If the block is placed in fresh water (density 1000 kg/m³), what percentage of the block's volume will be submerged?",
-                examId: "jee",
-                difficulty: "Medium",
-                explanation:
-                  "The buoyant force is equal to the weight of the water displaced.  The volume of water displaced equals the volume of the submerged portion of the block. Therefore, B = ρ_water * V_submerged * g. Since the block floats, the buoyant force equals the weight of the block: B = ρ_block * V_block * g. Combining these, we get ρ_water * V_submerged * g = ρ_block * V_block * g. Solving for V_submerged / V_block, we find that the fraction submerged is ρ_block / ρ_water = 600 / 1000 = 0.6.  Therefore, 60% of the volume is submerged.",
-                options: ["A) 40%", "B) 50%", "C) 60%", "D) 70%"],
-              },
-              {
-                id: "cm8vc8tsl0015m50mpkkhk8gv",
-                question:
-                  "If the length of a simple pendulum is increased by 44%, then what is the percentage increase in its time period?",
-                examId: "jee",
-                difficulty: "Hard",
-                explanation:
-                  "The time period of a simple pendulum is given by T = 2π√(L/g). If the length is increased by 44%, the new length is L' = 1.44L. Therefore, the new time period T' = 2π√(1.44L/g) = 2π√(1.44)√(L/g) = 1.2 * 2π√(L/g) = 1.2T. The percentage increase in time period is ((T' - T) / T) * 100 = ((1.2T - T) / T) * 100 = (0.2T / T) * 100 = 20%.",
-                options: ["A) 10%", "B) 15%", "C) 20%", "D) 44%"],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        name: "Chemistry",
-        sections: [
-          {
-            type: "MCQ",
-            questions: [
-              {
-                id: "cm8vc8tsk000lm50mhn0dbet4",
-                question:
-                  "Which of the following is most effective in causing the coagulation of a negatively charged sol?",
-                examId: "jee",
-                difficulty: "Medium",
-                explanation:
-                  "According to the Hardy-Schulze rule, the coagulating power of an electrolyte is directly proportional to the valency of the ion carrying the charge opposite to that of the colloid particle. Since Al3+ has a higher charge than Na+, AlCl3 will be more effective in causing coagulation of a negatively charged sol.",
-                options: ["A) NaCl", "B) AlCl₃", "C) K₂SO₄", "D) MgSO₄"],
-              },
-              {
-                id: "cm8vc8tsk000qm50mz7tmbick",
-                question:
-                  "How does an increase in temperature generally affect the rate of a chemical reaction, in terms of the pre-exponential factor and the exponential factor in the Arrhenius equation?",
-                examId: "jee",
-                difficulty: "Medium",
-                explanation:
-                  "The rate of reaction typically increases with temperature due to an increase in the kinetic energy of the molecules. This leads to more frequent and effective collisions, overcoming the activation energy barrier. The Arrhenius equation, k = A * exp(-Ea/RT), mathematically describes this relationship. Therefore, the pre-exponential factor A (related to collision frequency) and exponential factor increases.",
-                options: [
-                  "A) Both increase",
-                  "B) Both decrease",
-                  "C) Pre-exponential factor increases, exponential factor decreases",
-                  "D) Pre-exponential factor decreases, exponential factor increases",
-                ],
-              },
-              {
-                id: "cm8vc8tsl0019m50my9qjbb7h",
-                question:
-                  "The standard electrode potential (E°) for the cell Zn(s)|Zn2+(0.1 M)||Cu2+(0.01 M)|Cu(s) is 1.10 V at 298 K.  What is the cell potential (E)?",
-                examId: "jee",
-                difficulty: "Medium",
-                explanation:
-                  "The Nernst equation relates cell potential to the concentrations of reactants and products.  E = E° - (0.0592/n) * log(Q), where n is the number of moles of electrons transferred (2 in this case) and Q is the reaction quotient ([Zn2+]/[Cu2+]). Plugging in the values, E = 1.10 - (0.0592/2) * log(0.1/0.01) = 1.10 - (0.0592/2) * log(10) = 1.10 - 0.0296 = 1.0704 V. Hence, approximately 1.07 V.",
-                options: ["A) 1.07 V", "B) 1.10 V", "C) 1.13 V", "D) 1.16 V"],
-              },
-              {
-                id: "cm8vc8tsl001cm50m9j1fdlyr",
-                question:
-                  "What is the van't Hoff factor (i) for K2SO4, assuming complete dissociation?",
-                examId: "jee",
-                difficulty: "Medium",
-                explanation:
-                  "The van't Hoff factor (i) relates the actual number of particles in solution after dissociation to the number of formula units initially dissolved. For K2SO4, it dissociates into 2K+ and 1 SO42- ions, resulting in 3 ions. Hence, the van't Hoff factor is 3.",
-                options: ["A) 1", "B) 2", "C) 3", "D) 4"],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-  // const { data:examData } = api.post.getAllPapers.useQuery(
-  //   "cm8vc8tsj0003m50mc49yukds",
-  // ) ||[];
-
-  const questionPaper: QuestionPaperSection[] = [];
-  let globalQuestionId = 1; // Initialize a global counter for question IDs
-
-  // Convert the structured data into the format needed by the UI
-  examData.subjects.forEach((subject) => {
-    const questions: Question[] = [];
-
-    // Process all questions from this subject
-    subject.sections.forEach((section) => {
-      if (section.type === "MCQ") {
-        section.questions.forEach((q) => {
-          questions.push({
-            id: globalQuestionId++, // Use and increment the global counter
-            text: q.question,
-            options: q.options || [],
-            section: subject.name,
-            status: "not-visited",
-            timeSpent: 0,
-            // We could store the original ID if needed
-            // originalId: q.id,
-          });
-        });
-      }
-    });
-
-    // Add this subject to the question paper if it has questions
-    if (questions.length > 0) {
-      questionPaper.push({
-        name: subject.name,
-        questions: questions,
-      });
-    }
-  });
-
-  return questionPaper;
-};
-
 const ExamInterface = () => {
   // Update the state initializations to use localStorage
 
-  const { data:examData } = api.post.getAllPapers.useQuery(
-    "cm8vc8tsj0003m50mc49yukds",
-  )
-
-
-  
-
-  const [questionPaper, setQuestionPaper] = useState<QuestionPaperSection[]>(
-    () => {
-      // Try to get saved state from localStorage
-      const savedExam = localStorage.getItem("examState");
-      if (savedExam) {
-        return JSON.parse(savedExam);
-      }
-      if(!examData){
-        return generateSampleData();
-      }
-      return examData;
-    },
+  const { data: examData, isLoading } = api.post.getAllPapers.useQuery(
+    "cm8vm5asq002j132cbt5yuau4",
   );
 
-  const [currentSection, setCurrentSection] = useState<string>(() => {
-    const savedSection = localStorage.getItem("currentSection");
-    return savedSection || "Physics";
-  });
+  const [questionPaper, setQuestionPaper] = useState<QuestionPaperSection[]>(
+    [],
+  );
 
-  const [currentQuestionId, setCurrentQuestionId] = useState<number>(() => {
-    const savedQuestionId = localStorage.getItem("currentQuestionId");
-    return savedQuestionId ? parseInt(savedQuestionId) : 1;
-  });
+  // Add this useEffect to update questionPaper when examData changes
+  // Update the useEffect that processes examData
+  // Add this before rendering your component
+  useEffect(() => {
+    if (examData && examData.subjects.length > 0) {
+      const firstSection = examData.subjects[0].sections.find(
+        (s) => s.type === "MCQ",
+      );
+      if (firstSection && firstSection.questions.length > 0) {
+        console.log(
+          "First question options format:",
+          firstSection.questions[0].options,
+        );
 
-  const [timeLeft, setTimeLeft] = useState<number>(() => {
-    const savedTimeLeft = localStorage.getItem("timeLeft");
-    return savedTimeLeft ? parseInt(savedTimeLeft) : 10800; // 3 hours in seconds
-  });
+        // Log the structure of the first option
+        if (firstSection.questions[0].options.length > 0) {
+          console.log(
+            "First option structure:",
+            JSON.stringify(firstSection.questions[0].options[0], null, 2),
+          );
+        }
+      }
+    }
+  }, [examData]);
+  // Add this helper function
+  const getOptionText = (option: any): string => {
+    if (typeof option === "object" && option !== null) {
+      // Check for different properties that might contain the option text
+      if ("option" in option) return String(option.option || "");
+      if ("text" in option) return String(option.text || "");
+      if ("value" in option) return String(option.value || "");
+      // If no known property is found, stringify the object
+      return JSON.stringify(option);
+    }
+
+    // If it's a string, use it directly
+    return typeof option === "string" ? option : String(option || "");
+  };
+  useEffect(() => {
+    if (examData) {
+      const transformed: QuestionPaperSection[] = [];
+      let globalQuestionId = 1;
+
+      // Convert the structured data into the format needed by the UI
+      examData.subjects.forEach((subject) => {
+        const questions: Question[] = [];
+
+        // Process all questions from this subject
+        subject.sections.forEach((section) => {
+          if (section.type === "MCQ") {
+            section.questions.forEach((q) => {
+              // Ensure question text is a string
+              const questionText =
+                typeof q.question === "string"
+                  ? q.question
+                  : String(q.question || "");
+
+              // Extract option text from options objects
+              const options = Array.isArray(q.options)
+                ? q.options.map(getOptionText)
+                : [];
+
+              questions.push({
+                id: globalQuestionId++,
+                text: questionText,
+                options: options,
+                section: subject.name,
+                status: "not-visited",
+                timeSpent: 0,
+              });
+            });
+          }
+        });
+
+        // Add this subject to the question paper if it has questions
+        if (questions.length > 0) {
+          transformed.push({
+            name: subject.name,
+            questions: questions,
+          });
+        }
+      });
+
+      setQuestionPaper(transformed);
+    }
+  }, [examData]);
+
+  // Replace all localStorage-dependent state initializations
+  const [currentSection, setCurrentSection] = useState<string>("");
+  const [currentQuestionId, setCurrentQuestionId] = useState<number>(1);
+  const [timeLeft, setTimeLeft] = useState<number>(10800); // 3 hours in seconds
   const [activeTimer, setActiveTimer] = useState<NodeJS.Timeout | null>(null);
-
-  const [examStarted, setExamStarted] = useState<boolean>(() => {
-    return localStorage.getItem("examStarted") === "true";
-  });
+  const [examStarted, setExamStarted] = useState<boolean>(false);
   const [showStats, setShowStats] = useState<boolean>(false);
-
   const [showSubmitDialog, setShowSubmitDialog] = useState<boolean>(false);
-  const [showStartDialog, setShowStartDialog] = useState<boolean>(() => {
-    return !localStorage.getItem("examStarted");
-  });
+  const [showStartDialog, setShowStartDialog] = useState<boolean>(true);
   const [studentName, setStudentName] = useState<string>("");
   const [studentEmail, setStudentEmail] = useState<string>("");
 
   // Add this inside the ExamInterface component, right after all the state definitions
 
   // Start exam function
-  const startExam = () => {
-    // Save user info to localStorage
-    const examSession = {
-      studentName,
-      studentEmail,
-      examId: "jee_main_2025",
-      startTime: new Date().toISOString(),
+  // Start exam function without localStorage
+
+  // Get the current question// Use useMemo for derived values
+  const allQuestions = useMemo(() => {
+    return questionPaper.flatMap((section) => section.questions);
+  }, [questionPaper]);
+
+  // Get the current question using useMemo
+  const currentQuestion = useMemo(() => {
+    return allQuestions.find((q) => q.id === currentQuestionId);
+  }, [allQuestions, currentQuestionId]);
+  // Replace the existing stats object with this useMemo implementation
+
+  const stats = useMemo(() => {
+    return {
+      total: allQuestions.length,
+      answered: allQuestions.filter((q) => q.status === "answered").length,
+      notAnswered: allQuestions.filter((q) => q.status === "not-answered")
+        .length,
+      notVisited: allQuestions.filter((q) => q.status === "not-visited").length,
+      markedReview: allQuestions.filter((q) => q.status === "marked-review")
+        .length,
+      markedReviewAnswered: allQuestions.filter(
+        (q) => q.status === "marked-review-answered",
+      ).length,
+      guessed: allQuestions.filter((q) => q.status === "guessed").length,
+      totalTimeSpent: allQuestions.reduce((acc, q) => acc + q.timeSpent, 0),
     };
-
-    localStorage.setItem("examSession", JSON.stringify(examSession));
-    setExamStarted(true);
-    setShowStartDialog(false);
-  };
-
-  // Get the current question
-  const currentQuestion = questionPaper
-    .flatMap((section) => section.questions)
-    .find((q) => q.id === currentQuestionId);
-
-  // Calculate question stats
-  const allQuestions = questionPaper.flatMap((section) => section.questions);
-  const stats = {
-    total: allQuestions.length,
-    answered: allQuestions.filter((q) => q.status === "answered").length,
-    notAnswered: allQuestions.filter((q) => q.status === "not-answered").length,
-    notVisited: allQuestions.filter((q) => q.status === "not-visited").length,
-    markedReview: allQuestions.filter((q) => q.status === "marked-review")
-      .length,
-    markedReviewAnswered: allQuestions.filter(
-      (q) => q.status === "marked-review-answered",
-    ).length,
-    guessed: allQuestions.filter((q) => q.status === "guessed").length,
-    totalTimeSpent: allQuestions.reduce((acc, q) => acc + q.timeSpent, 0),
-  };
-
+  }, [allQuestions]);
   // Add these effects to save state changes
+  // Add this useMemo for section time statistics
+  const sectionTimeStats = useMemo(() => {
+    return questionPaper.map((section) => {
+      const sectionQuestions = section.questions;
+      const sectionTimeSpent = sectionQuestions.reduce(
+        (acc, q) => acc + q.timeSpent,
+        0,
+      );
+      const sectionPercentage =
+        stats.totalTimeSpent > 0
+          ? Math.round((sectionTimeSpent / stats.totalTimeSpent) * 100)
+          : 0;
 
+      return {
+        name: section.name,
+        timeSpent: sectionTimeSpent,
+        percentage: sectionPercentage,
+        answeredQuestions: sectionQuestions.filter(
+          (q) =>
+            q.status === "answered" ||
+            q.status === "guessed" ||
+            q.status === "marked-review-answered",
+        ).length,
+        totalQuestions: sectionQuestions.length,
+      };
+    });
+  }, [questionPaper, stats.totalTimeSpent]);
   // Save question paper state
-  useEffect(() => {
-    if (examStarted) {
-      localStorage.setItem("examState", JSON.stringify(questionPaper));
-    }
-  }, [questionPaper, examStarted]);
+  // useEffect(() => {
+  //   if (examStarted) {
+  //     localStorage.setItem("examState", JSON.stringify(questionPaper));
+  //   }
+  // }, [questionPaper, examStarted]);
 
-  // Save current section
-  useEffect(() => {
-    if (examStarted) {
-      localStorage.setItem("currentSection", currentSection);
-    }
-  }, [currentSection, examStarted]);
+  // // Save current section
+  // useEffect(() => {
+  //   if (examStarted) {
+  //     localStorage.setItem("currentSection", currentSection);
+  //   }
+  // }, [currentSection, examStarted]);
 
-  // Save current question ID
-  useEffect(() => {
-    if (examStarted) {
-      localStorage.setItem("currentQuestionId", currentQuestionId.toString());
-    }
-  }, [currentQuestionId, examStarted]);
+  // // Save current question ID
+  // useEffect(() => {
+  //   if (examStarted) {
+  //     localStorage.setItem("currentQuestionId", currentQuestionId.toString());
+  //   }
+  // }, [currentQuestionId, examStarted]);
 
-  // Save time left
-  useEffect(() => {
-    if (examStarted) {
-      localStorage.setItem("timeLeft", timeLeft.toString());
-    }
-  }, [timeLeft, examStarted]);
+  // // Save time left
+  // useEffect(() => {
+  //   if (examStarted) {
+  //     localStorage.setItem("timeLeft", timeLeft.toString());
+  //   }
+  // }, [timeLeft, examStarted]);
 
-  // Save exam started state
-  useEffect(() => {
-    localStorage.setItem("examStarted", examStarted.toString());
-  }, [examStarted]);
+  // // Save exam started state
+  // useEffect(() => {
+  //   localStorage.setItem("examStarted", examStarted.toString());
+  // }, [examStarted]);
   // Main timer effect
   useEffect(() => {
     const timer = setInterval(() => {
@@ -526,6 +370,7 @@ const ExamInterface = () => {
   };
 
   // Handle option selection
+  // Update the selectOption function to ensure proper data formatting
   const selectOption = (optionIndex: number) => {
     if (!currentQuestion) return;
 
@@ -549,47 +394,45 @@ const ExamInterface = () => {
       });
     });
   };
-  const submitExam = async () => {
-    const sessionData = JSON.parse(localStorage.getItem("examSession") || "{}");
+  const startExam = () => {
+    // Instead of saving to localStorage, just update state
+    setExamStarted(true);
+    setShowStartDialog(false);
 
-    // Create the submission object
+    // Set initial section if not already set
+    if (!currentSection && questionPaper.length > 0) {
+      setCurrentSection(questionPaper[0].name);
+    }
+  };
+  const submitExam = async () => {
+    // Create the submission object without localStorage references
     const submission: ExamSubmission = {
       examId: "jee_main_2025",
-      studentName: sessionData.studentName || "Anonymous",
-      studentEmail: sessionData.studentEmail || "anonymous@example.com",
+      studentName: studentName || "Anonymous",
+      studentEmail: studentEmail || "anonymous@example.com",
       submittedAt: new Date().toISOString(),
-      startTime: sessionData.startTime || new Date().toISOString(),
-      timeSpent: 10800 - timeLeft, // Total time spent (initial time - time left)
+      startTime: new Date(Date.now() - (10800 - timeLeft) * 1000).toISOString(),
+      timeSpent: 10800 - timeLeft, // Total time spent
 
-      // Process each question
-      answers: questionPaper.flatMap((section) =>
-        section.questions.map((question) => {
-          return {
-            questionId: question.id.toString(),
-            numericId: question.id,
-            section: question.section,
-            selectedOption: question.selectedOption,
-            status: question.status,
-            timeSpent: question.timeSpent,
-          };
-        }),
-      ),
-
-      // Process section statistics
-      sectionStats: questionPaper.map((section) => {
-        const sectionQuestions = section.questions;
-        const answeredQuestions = sectionQuestions.filter(
-          (q) =>
-            q.status === "answered" ||
-            q.status === "guessed" ||
-            q.status === "marked-review-answered",
-        );
-
+      // Process each question using allQuestions
+      answers: allQuestions.map((question) => {
         return {
-          name: section.name,
-          timeSpent: sectionQuestions.reduce((acc, q) => acc + q.timeSpent, 0),
-          questionsAnswered: answeredQuestions.length,
-          questionsTotal: sectionQuestions.length,
+          questionId: question.id.toString(),
+          numericId: question.id,
+          section: question.section,
+          selectedOption: question.selectedOption,
+          status: question.status,
+          timeSpent: question.timeSpent,
+        };
+      }),
+
+      // Process section statistics using sectionTimeStats
+      sectionStats: sectionTimeStats.map((sectionStat) => {
+        return {
+          name: sectionStat.name,
+          timeSpent: sectionStat.timeSpent,
+          questionsAnswered: sectionStat.answeredQuestions,
+          questionsTotal: sectionStat.totalQuestions,
         };
       }),
 
@@ -609,40 +452,22 @@ const ExamInterface = () => {
       // Show submission animation/message here
       console.log("Submitting exam data:", submission);
 
-      // Send to backend (uncomment when API is ready)
-      /*
-      const response = await fetch('/api/submit-exam', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submission),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to submit exam');
-      }
-      
-      const result = await response.json();
-      */
+      // Your existing submission logic...
 
-      // Clear all localStorage data
-      localStorage.removeItem("examState");
-      localStorage.removeItem("currentSection");
-      localStorage.removeItem("currentQuestionId");
-      localStorage.removeItem("timeLeft");
-      localStorage.removeItem("examStarted");
-      localStorage.removeItem("examSession");
-
-      // Show success message or redirect
+      // Just redirect after submission - no localStorage to clean up
       alert("Exam submitted successfully!");
-      window.location.href = "/"; // Redirect to home or results page
+      window.location.href = "/";
     } catch (error) {
       console.error("Error submitting exam:", error);
       alert("Failed to submit exam. Please try again.");
     }
   };
-
+  // Add an effect to set the initial section when question paper is loaded
+  useEffect(() => {
+    if (questionPaper.length > 0 && !currentSection) {
+      setCurrentSection(questionPaper[0].name);
+    }
+  }, [questionPaper, currentSection]);
   // Handle changing question
   const changeQuestion = (questionId: number) => {
     // Update current question's status if it's not visited
@@ -799,22 +624,23 @@ const ExamInterface = () => {
   };
 
   // Get average time per question
-  const getAverageTimePerQuestion = () => {
+  // Replace the averageTimePerQuestion function with this useMemo implementation
+  // Fix the averageTimePerQuestion implementation
+  const averageTimePerQuestion = useMemo(() => {
     const answeredQuestions = allQuestions.filter(
       (q) =>
         q.status === "answered" ||
         q.status === "guessed" ||
         q.status === "marked-review-answered",
     );
+
     if (answeredQuestions.length === 0) return 0;
+
     return Math.round(
       answeredQuestions.reduce((acc, q) => acc + q.timeSpent, 0) /
         answeredQuestions.length,
     );
-  };
-
-  
-
+  }, [allQuestions]);
   return (
     <div className="flex h-screen flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       {/* Start Exam Dialog */}
@@ -1007,8 +833,10 @@ const ExamInterface = () => {
                           <p className="text-sm text-zinc-500 dark:text-zinc-400">
                             Average Time Per Question
                           </p>
+                          // Update this part in your JSX where you display the
+                          average time
                           <p className="text-2xl font-bold">
-                            {formatTime(getAverageTimePerQuestion())}
+                            {formatTime(averageTimePerQuestion)}
                           </p>
                         </div>
                         <div>
@@ -1022,7 +850,6 @@ const ExamInterface = () => {
                       </div>
                     </CardContent>
                   </Card>
-
                   <Card className="border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                     <CardContent className="pt-6">
                       <h3 className="mb-4 text-lg font-semibold">
@@ -1082,34 +909,24 @@ const ExamInterface = () => {
                         Time Spent by Section
                       </h3>
                       <div className="space-y-4">
-                        {questionPaper.map((section) => {
-                          const sectionTimeSpent = section.questions.reduce(
-                            (acc, q) => acc + q.timeSpent,
-                            0,
-                          );
-                          const sectionPercentage =
-                            Math.round(
-                              (sectionTimeSpent / stats.totalTimeSpent) * 100,
-                            ) || 0;
-
-                          return (
-                            <div key={section.name} className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium">
-                                  {section.name}
-                                </span>
-                                <span>
-                                  {formatTime(sectionTimeSpent)} (
-                                  {sectionPercentage}%)
-                                </span>
-                              </div>
-                              <Progress
-                                value={sectionPercentage}
-                                className="h-2 bg-zinc-200 dark:bg-zinc-700"
-                              />
+                        {/* Use the memoized sectionTimeStats directly */}
+                        {sectionTimeStats.map((sectionStat) => (
+                          <div key={sectionStat.name} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">
+                                {sectionStat.name}
+                              </span>
+                              <span>
+                                {formatTime(sectionStat.timeSpent)} (
+                                {sectionStat.percentage}%)
+                              </span>
                             </div>
-                          );
-                        })}
+                            <Progress
+                              value={sectionStat.percentage}
+                              className="h-2 bg-zinc-200 dark:bg-zinc-700"
+                            />
+                          </div>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -1120,113 +937,26 @@ const ExamInterface = () => {
                 {currentQuestion && (
                   <>
                     <div className="mb-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-semibold">
-                          Question {currentQuestionId}{" "}
-                          <span className="text-zinc-500 dark:text-zinc-400">
-                            ({currentQuestion.section})
-                          </span>
-                        </h2>
-                        <Badge
-                          className={getStatusColor(currentQuestion.status)}
-                        >
-                          {currentQuestion.status
-                            .replace(/-/g, " ")
-                            .replace(/\b\w/g, (l) => l.toUpperCase())}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                          Time spent:
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className="border-zinc-300 bg-transparent text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
-                        >
-                          <Clock className="mr-1 h-3 w-3 text-amber-500 dark:text-amber-400" />
-                          {formatTime(currentQuestion.timeSpent)}
-                        </Badge>
-                      </div>
+                      {/* Your existing header */}
                     </div>
 
+                    {/* Add proper checks and conversions */}
                     <MarkdownQuestionDisplay
-                      question={currentQuestion}
+                      question={{
+                        text:
+                          typeof currentQuestion.text === "string"
+                            ? currentQuestion.text
+                            : String(currentQuestion.text || ""),
+                        options: Array.isArray(currentQuestion.options)
+                          ? currentQuestion.options.map(getOptionText)
+                          : [],
+                        selectedOption: currentQuestion.selectedOption,
+                      }}
                       onSelectOption={selectOption}
                     />
 
                     <div className="flex flex-wrap justify-between gap-2">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={goToPrevQuestion}
-                          disabled={currentQuestionId <= 1}
-                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                        >
-                          <ArrowLeft className="mr-2 h-4 w-4" />
-                          Previous
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          onClick={goToNextQuestion}
-                          disabled={currentQuestionId >= stats.total}
-                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                        >
-                          Next
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={clearResponse}
-                          disabled={
-                            currentQuestion.selectedOption === undefined
-                          }
-                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                        >
-                          <RotateCcw className="mr-2 h-4 w-4" />
-                          Clear
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          onClick={toggleMarkForReview}
-                          className={`rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
-                            currentQuestion.status.includes("marked-review")
-                              ? "text-purple-600 dark:text-purple-400"
-                              : ""
-                          }`}
-                        >
-                          <Flag className="mr-2 h-4 w-4" />
-                          {currentQuestion.status.includes("marked-review")
-                            ? "Unmark"
-                            : "Mark for Review"}
-                        </Button>
-
-                        <Button
-                          variant="outline"
-                          onClick={guessAndNext}
-                          disabled={
-                            currentQuestion.selectedOption === undefined
-                          }
-                          className="rounded-full border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
-                        >
-                          <LightbulbIcon className="mr-2 h-4 w-4" />
-                          Mark as Guessed
-                        </Button>
-
-                        <Button
-                          variant="default"
-                          onClick={goToNextQuestion}
-                          disabled={currentQuestionId >= stats.total}
-                          className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800"
-                        >
-                          <Save className="mr-2 h-4 w-4" />
-                          Save & Next
-                        </Button>
-                      </div>
+                      {/* Your existing buttons */}
                     </div>
                   </>
                 )}
