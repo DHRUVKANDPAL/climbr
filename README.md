@@ -93,13 +93,13 @@ Visit **http://localhost:3000** to see ClimbR in action!
 
 ## 📱 Application Screenshots
 
-![ClimbR interfaces](image1.png)
-![ClimbR interfaces](image2.png)
-![ClimbR interfaces](image3.png)
-![ClimbR interfaces](image4.png)
-![ClimbR interfaces](image5.png)
-![ClimbR interfaces](image6.png)
-![ClimbR interfaces](image7.png)
+![ClimbR interfaces](public/image1.png)
+![ClimbR interfaces](public/image2.png)
+![ClimbR interfaces](public/image3.png)
+![ClimbR interfaces](public/image4.png)
+![ClimbR interfaces](public/image5.png)
+![ClimbR interfaces](public/image6.png)
+![ClimbR interfaces](public/image7.png)
 
 ## 📈 Business & Revenue Model
 
