@@ -22,7 +22,9 @@ const page = () => {
   //    };
   //    fetchData();
   //  }, []);
-  const { data } = api.post.getAllPapers.useQuery("cm8vm5asq002j132cbt5yuau4");
+  const { data } = api.post.generateResult.useQuery(
+    "cm8wjv0050001flhq3ggz1i5n",
+  );
   console.log(data, "examData");
   return (
     <div className="w-full max-w-xs">

@@ -205,6 +205,7 @@ model paperQuestion {
 
 
 
+
 model PaperQuestionAnalytics {
     id         String   @id @default(cuid())
     paperQuestionId String
@@ -228,6 +229,7 @@ model Paper {
     createdAt             DateTime        @default(now())
     updatedAt             DateTime        @updatedAt
     paperQuestion         paperQuestion?
+    submission Submission[]
     @@index([userId])
     @@index([examId])
     @@index([createdAt])
@@ -235,6 +237,57 @@ model Paper {
     @@index([name])
 }
 
+model Submission {
+    id         String   @id @default(cuid())
+    paperId    String
+    paper      Paper    @relation(fields: [paperId], references: [id])
+    submittedAt DateTime 
+    startTime DateTime
+    timeSpent Int
+    answer Answer[]
+    sectionStats SectionStats[]
+    summary summary?
+}
+
+
+
+model Answer{
+    id String @id @default(cuid())
+    questionId String
+    numericId Int
+    section String
+    selectedOptionId Int
+    status String
+    timeSpentInSec Int
+    submissionId String
+    submission Submission @relation(fields: [submissionId], references: [id])
+}
+
+
+
+model SectionStats{
+    id String @id @default(cuid())
+    name String
+    timeSpentInSec Int
+    questionAnswered Int
+    questionsTotal Int
+    submissionId String
+    submission Submission @relation(fields: [submissionId], references: [id])
+}
+
+
+model summary{
+    id String @id @default(cuid())
+    totalQuestions Int
+    answered Int
+    notAnswered Int
+    notVisited Int
+    markedForReview Int
+    markedReviewAnswered Int
+    guessed Int
+    submissionId String @unique
+    submission Submission @relation(fields: [submissionId], references: [id])
+}
 
 model PaperAnalytics {
     id                       String   @id @default(cuid())

@@ -480,12 +480,13 @@ const ExamInterface = () => {
       setCurrentSection(questionPaper[0].name);
     }
   };
+  const submit=api.post.submit.useMutation();
   const submitExam = async () => {
     // Get the exam ID from the fetched exam data instead of using a static string
     const examId = examData?.subjects[0].sections[0].questions[0].examId;
 
     // Create the submission object
-    const submission = {
+    const submission:any = {
       paperId: id,
       examId: examId, // Use the exam ID from your API response
       submittedAt: new Date().toISOString(),
@@ -528,7 +529,7 @@ const ExamInterface = () => {
 
     try {
       console.log("Submitting exam data:", submission);
-
+      submit.mutate(submission);
       // Send data to your backend using tRPC
       // Create a matching mutation in your exam router
       // const result = await api.exam.submitExamResults.mutate(submission);
