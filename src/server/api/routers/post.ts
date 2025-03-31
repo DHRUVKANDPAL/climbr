@@ -37,7 +37,6 @@ function transformData(papers: any, examDetails: any) {
   return { subjects };
 }
 
-
 function transformSubmissionData(
   submissionResult: any,
   paperQuestion: any,
@@ -540,8 +539,6 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-
-
       const result = await ctx.db.submission.create({
         data: {
           paperId: input.paperId,
@@ -581,68 +578,105 @@ export const postRouter = createTRPCRouter({
       });
 
       console.log(result, "result");
-
     }),
-    generateResult:protectedProdcedure.input(z.string()).query(async ({ctx,input})=>{
+  generateResult: protectedProdcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
       const result = await ctx.db.submission.findUnique({
-        where:{
-          id:input
+        where: {
+          id: input,
         },
-        include:{
-          answer:true,
-          sectionStats:true,
-          summary:true
-        }
-      })
+        include: {
+          answer: true,
+          sectionStats: true,
+          summary: true,
+        },
+      });
       const paperQuestion = await ctx.db.paper.findUnique({
-        where:{
-          id:result?.paperId
+        where: {
+          id: result?.paperId,
         },
-        include:{
-          paperQuestion:{
-            include:{
-              questions:{
-                include:{
-                  subject:true,
-                  topic:true,
-                  options:true
-                }
-              }
-            }
-          }
-        }
-      })
-      let status=[];
+        include: {
+          paperQuestion: {
+            include: {
+              questions: {
+                include: {
+                  subject: true,
+                  topic: true,
+                  options: true,
+                },
+              },
+            },
+          },
+        },
+      });
+      let status = [];
       if (paperQuestion?.paperQuestion?.questions) {
-        for (let i = 0; i < paperQuestion?.paperQuestion?.questions.length; i++) {
+        for (
+          let i = 0;
+          i < paperQuestion?.paperQuestion?.questions.length;
+          i++
+        ) {
           // Your logic here
           const question = paperQuestion?.paperQuestion?.questions[i];
-          const optionsArray= question?.options;
+          const optionsArray = question?.options;
           const selectedOptionId = result?.answer[i]?.selectedOptionId;
-          if (selectedOptionId !== undefined && (optionsArray ?? [])[selectedOptionId]?.isCorrect) {
+          if (
+            selectedOptionId !== undefined &&
+            (optionsArray ?? [])[selectedOptionId]?.isCorrect
+          ) {
             status.push(1);
-          } else if (selectedOptionId !== undefined && selectedOptionId!==-1 && !(optionsArray ?? [])[selectedOptionId]?.isCorrect) {
+          } else if (
+            selectedOptionId !== undefined &&
+            selectedOptionId !== -1 &&
+            !(optionsArray ?? [])[selectedOptionId]?.isCorrect
+          ) {
             status.push(-1);
-          }else{
+          } else {
             status.push(0);
           }
-
-
         }
       }
       const examDetails = await ctx.db.exams.findFirst({
-        where:{
-          id:paperQuestion?.examId
+        where: {
+          id: paperQuestion?.examId,
         },
-        include:{
-          section:true,
-          subjects:true
-        }
-      })
+        include: {
+          section: true,
+          subjects: true,
+        },
+      });
 
-
-      const transformedData = transformSubmissionData(result,paperQuestion,status,examDetails)
-      console.log(transformedData,"generateResult")
-      return transformedData
+      const transformedData = transformSubmissionData(
+        result,
+        paperQuestion,
+        status,
+        examDetails,
+      );
+      console.log(transformedData, "generateResult");
+      return transformedData;
     }),
+
+  reportRoom: protectedProdcedure
+    .input(z.object({ roomName: z.string(), reportReason: z.string(), description: z.string(),severity:z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const userIdThroughClerk = ctx.user.userId;
+      if (!userIdThroughClerk) throw new Error("User not found");
+      const report = await ctx.db.report.create({
+        data: {
+          roomName: input.roomName,
+          userId: userIdThroughClerk,
+          reason: input.reportReason,
+          description: input.description,
+          severity: input.severity,
+        },
+      });
+      return report;
+    }),
+
+
+    
+
+
+
 });

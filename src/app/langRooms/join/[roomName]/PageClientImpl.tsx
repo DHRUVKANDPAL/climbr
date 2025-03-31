@@ -227,17 +227,19 @@ function VideoConferenceComponent(props: {
           chatMessageFormatter={formatChatMessageLinks}
           SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
         />
-        <div className="absolute top-0 right-0">
+        <div className="absolute top-0 right-0 h-20 flex justify-center items-center">
           <Button
             onClick={() => props.setNext()}
-            variant={"destructive"}
-            className=""
+            variant={"default"}
+            className="text-white p-4 h-full"
           >
             Next
             <br></br>
             Current room is {props.connectionDetails.roomName}
           </Button>
-          
+          <Button onClick={() => router.push(`/report/${props.connectionDetails.roomName}`)} variant={"destructive"} className="p-4 h-full">
+            Report a Problem
+          </Button>
         </div>
       </LiveKitRoom>
     </>

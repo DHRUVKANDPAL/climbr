@@ -26,13 +26,13 @@ export default async function Page({
   const region=await searchParams.region;
   return (
     <div className='h-screen'>
-      <PageClientImpl
+      {/* <PageClientImpl
         roomName={roomname}
         region={region}
         hq={hq}
         codec={codec}
         language={searchParams.language}
-      />
+      /> */}
     </div>
   );
 }

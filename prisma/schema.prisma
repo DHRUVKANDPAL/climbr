@@ -371,3 +371,16 @@ model Transaction {
     credits           Int
     user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+
+
+model Report{
+    id String @id @default(cuid())
+    userId String
+    roomName String
+    reason String
+    description String?
+    severity Int?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
