@@ -1,29 +1,121 @@
-# Create T3 App
+# ClimbR – AI-Powered EdTech & Student Support Platform
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+ClimbR is more than just an education platform—it's a **lifeline for students** navigating academic stress, career confusion, and mental well-being. Our platform combines **AI-driven adaptive learning, anonymous counseling, and real-time study rooms** to ensure that **no student feels lost or alone** on their educational journey.
 
-## What's next? How do I make an app with this?
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## 💔 The Problem: Why Students Need ClimbR
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+### 1️⃣ **Isolation & Lack of Support**
+Many students feel **disconnected and alone**, especially during high-pressure exam seasons. Without proper guidance, study partners, or emotional support, academic challenges can become overwhelming.
 
-## Learn More
+### 2️⃣ **Rising Student Mental Health Concerns**
+**Academic pressure, career anxiety, and personal struggles** have led to a concerning rise in student depression and anxiety. Many don't seek help due to **stigma** or lack of accessible support options.
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### 3️⃣ **Ineffective One-Size-Fits-All Learning**
+Most test prep platforms provide **generic content**, failing to address individual learning styles and knowledge gaps. Students waste precious time on ineffective study methods, leading to frustration and burnout.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### 4️⃣ **Career Path Uncertainty**
+**Unclear career choices, misinformation, and lack of proper mentorship** leave students confused about their future. They desperately need **personalized, data-driven career guidance** to make informed decisions.
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## 🌟 Core Features
 
-## How do I deploy this?
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+### 🎯 **Adaptive Learning & Exam Preparation**
+
+
+- **Smart PYQs** – AI dynamically adjusts question difficulty based on student progress
+- **AI Weakness Detection** – Identifies knowledge gaps and recommends focused study materials
+- **Daily Challenges & Gamification** – Maintains motivation through leaderboards, badges & study streaks
+- **Institutional Test Series** – Enables colleges & institutes to run structured mock exams
+
+### 🧠 **Mental Well-being & Support Network**
+
+
+- **Anonymous Peer Counseling** – Safe space to discuss stress, anxiety, and academic pressure
+- **AI-Powered Career Guidance** – Personalized career pathways based on strengths & interests
+- **Virtual Study Rooms** – Connect with study partners via **LiveKit-based video collaboration**
+
+### 🔒 **AI-Powered Moderation & Safety**
+
+
+- **Toxic Speech Detection** – Automatically mutes users for offensive speech in video calls
+- **NSFW Content Prevention** – AI instantly identifies and removes inappropriate content
+- **Trust Score System** – Maintains community standards through reputation management
+
+## 🖥️ Technology Stack
+
+
+| Component | Technologies |
+|-----------|-------------|
+| **Frontend** | Next.js, React, Tailwind CSS, ShadCN, magicUI |
+| **Backend** | Next.js, tRPC Router, Prisma, PostgreSQL, Bun |
+| **AI/ML** | Agent.ai with LangChain, LangGraph, LangSmith for analytics |
+| **Real-time Communication** | LiveKit for video-based study rooms & counseling |
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ and npm/yarn
+- PostgreSQL database
+- LiveKit account for video features
+- API keys for AI services
+
+### Installation
+
+**1. Clone the Repository**
+```bash
+git clone https://github.com/yourusername/ClimbR.git
+cd ClimbR
+```
+
+**2. Install Dependencies**
+```bash
+npm install
+```
+
+**3. Configure Environment Variables**
+Create a `.env.local` file with the following:
+```env
+NEXT_PUBLIC_LIVEKIT_URL=your_livekit_server_url
+NEXT_PUBLIC_PERSPECTIVE_API_KEY=your_api_key
+NEXT_PUBLIC_DEEPGRAM_API_KEY=your_api_key
+DATABASE_URL=your_postgresql_url
+CLERK_SECRET_KEY=your_clerk_secret_key
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+**4. Start the Development Server**
+```bash
+npm run dev
+```
+Visit **http://localhost:3000** to see ClimbR in action!
+
+## 📱 Application Screenshots
+
+![ClimbR interfaces](image1.png)
+![ClimbR interfaces](image2.png)
+![ClimbR interfaces](image3.png)
+![ClimbR interfaces](image4.png)
+![ClimbR interfaces](image5.png)
+![ClimbR interfaces](image6.png)
+![ClimbR interfaces](image7.png)
+
+## 📈 Business & Revenue Model
+
+Our sustainable approach combines:
+
+- **Freemium Model** – Core features free for all students, premium features for enhanced experience
+- **B2B Partnerships** – Educational institutions subscribe for advanced analytics, custom test series & AI career counseling
+- **Strategic Sponsorships** – Carefully curated educational partnerships and recommendations
+
+## 🔮 Roadmap & Future Enhancements
+
+- **AI Tutoring Assistant** for personalized doubt solving
+- **Multi-language Support** to reach diverse global learners
+- **Blockchain-based Skill Certifications** for verifiable credentials
+- **Mobile Applications** for iOS and Android
+
+---
+
+*ClimbR: Empowering every student to reach new heights in education and well-being.*
