@@ -325,34 +325,46 @@ export const postRouter = createTRPCRouter({
   mapUserToLanguageRoom: protectedProdcedure
     .input(z.object({ language1: z.string(), language2: z.string() }))
     .query(async ({ ctx, input }) => {
-
       const mapping = await ctx.db.languageRooms.findMany({
         include: {
           languages: true,
         },
         where: {
           AND: [
-        {
-          languages: {
-            some: {
-          name: input.language1,
+            {
+              languages: {
+                some: {
+                  name: input.language1,
+                },
+              },
             },
-          },
-        },
-        {
-          languages: {
-            some: {
-          name: input.language2,
+            {
+              languages: {
+                some: {
+                  name: input.language2,
+                },
+              },
             },
-          },
-        },
           ],
         },
       });
-
-
-      const randomRoom = mapping[Math.floor(Math.random() * mapping.length)];
-      console.log(randomRoom?.roomId, "randomRoom");
-      return randomRoom?.roomId;
+      console.log(mapping, "mapping");
+      const mappingwithIdOnly = mapping.map((room) => ({
+        roomId: room.roomId,
+      }));
+      // const randomRoom = mapping[Math.floor(Math.random() * mapping.length)];
+      // console.log(randomRoom?.roomId, "randomRoom");
+      return mappingwithIdOnly;
     }),
+
+
+    saveQuestionToDb: protectedProdcedure.input(z.object({
+      
+    })).mutation(async ({ ctx }) => {
+
+    })
+
+
+
+
 });

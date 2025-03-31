@@ -1,17 +1,17 @@
-'use client';
+"use client";
 import "../../../../styles/main.module.css";
 import "@livekit/components-styles";
 import "@livekit/components-styles/prefabs";
-import { decodePassphrase } from '@/lib/client-utils';
-import { SettingsMenu } from '@/lib/SettingsMenu';
-import { type ConnectionDetails } from '@/lib/types';
+import { decodePassphrase } from "@/lib/client-utils";
+import { SettingsMenu } from "@/lib/SettingsMenu";
+import { type ConnectionDetails } from "@/lib/types";
 import {
   formatChatMessageLinks,
   LiveKitRoom,
   LocalUserChoices,
   PreJoin,
   VideoConference,
-} from '@livekit/components-react';
+} from "@livekit/components-react";
 import {
   ExternalE2EEKeyProvider,
   type RoomOptions,
@@ -20,15 +20,15 @@ import {
   Room,
   DeviceUnsupportedError,
   type RoomConnectOptions,
-} from 'livekit-client';
-import { redirect, useRouter } from 'next/navigation';
-import React from 'react';
+} from "livekit-client";
+import { redirect, useRouter } from "next/navigation";
+import React from "react";
 import { api } from "@/trpc/react";
 import { Button } from "@/components/ui/button";
 
 const CONN_DETAILS_ENDPOINT =
-  process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? '/api/join-details';
-const SHOW_SETTINGS_MENU = process.env.NEXT_PUBLIC_SHOW_SETTINGS_MENU == 'true';
+  process.env.NEXT_PUBLIC_CONN_DETAILS_ENDPOINT ?? "/api/join-details";
+const SHOW_SETTINGS_MENU = process.env.NEXT_PUBLIC_SHOW_SETTINGS_MENU == "true";
 
 export function PageClientImpl(props: {
   roomName: string;
@@ -36,41 +36,48 @@ export function PageClientImpl(props: {
   hq: boolean;
   codec: VideoCodec;
   language: string;
+  setNext: () => void;
 }) {
-  const [preJoinChoices, setPreJoinChoices] = React.useState<LocalUserChoices | undefined>(
-    undefined,
-  );
+  const [preJoinChoices, setPreJoinChoices] = React.useState<
+    LocalUserChoices | undefined
+  >(undefined);
   const preJoinDefaults = React.useMemo(() => {
     return {
-      username: '',
+      username: "",
       videoEnabled: true,
       audioEnabled: true,
     };
   }, []);
-  const [connectionDetails, setConnectionDetails] = React.useState<ConnectionDetails | undefined>(
-    undefined,
+  const [connectionDetails, setConnectionDetails] = React.useState<
+    ConnectionDetails | undefined
+  >(undefined);
+
+  const handlePreJoinSubmit = React.useCallback(
+    async (values: LocalUserChoices) => {
+      setPreJoinChoices(values);
+      const url = new URL(CONN_DETAILS_ENDPOINT, window.location.origin);
+      url.searchParams.append("roomName", props.roomName);
+      url.searchParams.append("participantName", values.username);
+      url.searchParams.append("languages", props.language); // Example languages
+      if (props.region) {
+        url.searchParams.append("region", props.region);
+      }
+      const connectionDetailsResp = await fetch(url.toString());
+      const connectionDetailsData = await connectionDetailsResp.json();
+      setConnectionDetails(connectionDetailsData);
+      console.log(connectionDetailsData);
+    },
+    [],
+  );
+  const handlePreJoinError = React.useCallback(
+    (e: any) => console.error(e),
+    [],
   );
 
-  const handlePreJoinSubmit = React.useCallback(async (values: LocalUserChoices) => {
-    setPreJoinChoices(values);
-    const url = new URL(CONN_DETAILS_ENDPOINT, window.location.origin);
-    url.searchParams.append('roomName', props.roomName);
-    url.searchParams.append('participantName', values.username);
-    url.searchParams.append('languages', props.language); // Example languages
-    if (props.region) {
-      url.searchParams.append('region', props.region);
-    }
-    const connectionDetailsResp = await fetch(url.toString());
-    const connectionDetailsData = await connectionDetailsResp.json();
-    setConnectionDetails(connectionDetailsData);
-    console.log(connectionDetailsData);
-  }, []);
-  const handlePreJoinError = React.useCallback((e: any) => console.error(e), []);
-
   return (
-    <main data-lk-theme="default" style={{ height: '100%' }}>
+    <main data-lk-theme="default" style={{ height: "100%" }}>
       {connectionDetails === undefined || preJoinChoices === undefined ? (
-        <div style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
+        <div style={{ display: "grid", placeItems: "center", height: "100%" }}>
           <PreJoin
             defaults={preJoinDefaults}
             onSubmit={handlePreJoinSubmit}
@@ -83,6 +90,7 @@ export function PageClientImpl(props: {
           userChoices={preJoinChoices}
           options={{ codec: props.codec, hq: props.hq }}
           language={props.language}
+          setNext={props.setNext}
         />
       )}
     </main>
@@ -97,21 +105,25 @@ function VideoConferenceComponent(props: {
     codec: VideoCodec;
   };
   language: string;
+  setNext: () => void;
 }) {
   const e2eePassphrase =
-    typeof window !== 'undefined' && decodePassphrase(location.hash.substring(1));
+    typeof window !== "undefined" &&
+    decodePassphrase(location.hash.substring(1));
 
   const worker =
-    typeof window !== 'undefined' &&
+    typeof window !== "undefined" &&
     e2eePassphrase &&
-    new Worker(new URL('livekit-client/e2ee-worker', import.meta.url));
+    new Worker(new URL("livekit-client/e2ee-worker", import.meta.url));
   const e2eeEnabled = !!(e2eePassphrase && worker);
   const keyProvider = new ExternalE2EEKeyProvider();
   const [e2eeSetupComplete, setE2eeSetupComplete] = React.useState(false);
 
   const roomOptions = React.useMemo((): RoomOptions => {
-    let videoCodec: VideoCodec | undefined = props.options.codec ? props.options.codec : 'vp9';
-    if (e2eeEnabled && (videoCodec === 'av1' || videoCodec === 'vp9')) {
+    let videoCodec: VideoCodec | undefined = props.options.codec
+      ? props.options.codec
+      : "vp9";
+    if (e2eeEnabled && (videoCodec === "av1" || videoCodec === "vp9")) {
       videoCodec = undefined;
     }
     return {
@@ -130,7 +142,7 @@ function VideoConferenceComponent(props: {
       audioCaptureDefaults: {
         deviceId: props.userChoices.audioDeviceId ?? undefined,
       },
-      adaptiveStream: { pixelDensity: 'screen' },
+      adaptiveStream: { pixelDensity: "screen" },
       dynacast: true,
       e2ee: e2eeEnabled
         ? {
@@ -173,20 +185,22 @@ function VideoConferenceComponent(props: {
 
   const router = useRouter();
 
-  const handleOnLeave = React.useCallback(() => router.push('/'), [router]);
-//   const handleOnLeave = React.useCallback(async () => {
-//     const disconnect = await fetch('/api/langRoomsDisconnect', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({ roomName: props.connectionDetails.roomName }),
-//     });
-//     router.push('/');
-//   }, [router, props.connectionDetails.roomName]);
+  const handleOnLeave = React.useCallback(() => router.push("/"), [router]);
+  //   const handleOnLeave = React.useCallback(async () => {
+  //     const disconnect = await fetch('/api/langRoomsDisconnect', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({ roomName: props.connectionDetails.roomName }),
+  //     });
+  //     router.push('/');
+  //   }, [router, props.connectionDetails.roomName]);
   const handleError = React.useCallback((error: Error) => {
     console.error(error);
-    alert(`Encountered an unexpected error, check the console logs for details: ${error.message}`);
+    alert(
+      `Encountered an unexpected error, check the console logs for details: ${error.message}`,
+    );
   }, []);
   const handleEncryptionError = React.useCallback((error: Error) => {
     console.error(error);
@@ -194,12 +208,7 @@ function VideoConferenceComponent(props: {
       `Encountered an unexpected encryption error, check the console logs for details: ${error.message}`,
     );
   }, []);
-  
-  async function handleClicks() {
-   const languages=props.language.split(",").map((lang) => lang.trim());
-   redirect(
-     `/langRooms/join?language1=${languages[1]}&language2=${languages[0]}`,)
-  }
+
   return (
     <>
       <LiveKitRoom
@@ -218,9 +227,16 @@ function VideoConferenceComponent(props: {
           chatMessageFormatter={formatChatMessageLinks}
           SettingsComponent={SHOW_SETTINGS_MENU ? SettingsMenu : undefined}
         />
-        <Button onClick={handleClicks} variant={"destructive"} className="absolute top-0 right-0">Next</Button>
+        <Button
+          onClick={() => props.setNext()}
+          variant={"destructive"}
+          className="absolute top-0 right-0"
+        >
+          Next
+          <br></br>
+          Current room is {props.connectionDetails.roomName}
+        </Button>
       </LiveKitRoom>
     </>
   );
 }
-
