@@ -43,6 +43,8 @@ import PercentileCard from "@/components/PercentileCard";
 import AnalysisCard from "@/components/AnalysisCard";
 import Leaderboard from "@/components/LeaderBoard";
 import DarkModeToggle from "@/components/DarkModeToggle";
+import Link from "next/link";
+import ExamFormDialog from "@/components/ExamFormDialog";
 
 const ProfileDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -395,7 +397,7 @@ const ProfileDashboard = () => {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <DarkModeToggle/>
+            <DarkModeToggle />
             <Button variant="outline" size="sm" className="gap-1">
               <User className="h-4 w-4" />
               Edit Profile
@@ -781,7 +783,7 @@ const ProfileDashboard = () => {
           </Card>
         </TabsContent>
         <TabsContent value="leaderboard">
-          <Leaderboard/>
+          <Leaderboard />
         </TabsContent>
 
         {/* Exams Tab Content */}
@@ -794,7 +796,7 @@ const ProfileDashboard = () => {
                   <Button variant="outline" size="sm">
                     Download Reports
                   </Button>
-                  <Button size="sm">Schedule New Test</Button>
+                  <ExamFormDialog />
                 </div>
               </div>
             </CardHeader>

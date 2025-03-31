@@ -61,7 +61,78 @@ type QuestionStatus =
   | "marked-review"
   | "marked-review-answered"
   | "guessed";
+// Helper function parameter type
+type OptionValue = string | object | null | undefined;
 
+// For the getOptionText function
+function getOptionText(option: OptionValue): string {
+  // function implementation
+}
+
+// For the exam data structure
+type ExamDataOption = {
+  option?: string;
+  text?: string;
+  value?: string;
+  [key: string]: any;
+};
+
+type ExamDataQuestion = {
+  question: string | any;
+  options: ExamDataOption[] | string[];
+  examId?: string;
+  id?: string | number;
+  [key: string]: any;
+};
+
+type ExamDataSection = {
+  type: string;
+  questions: ExamDataQuestion[];
+  [key: string]: any;
+};
+
+type ExamDataSubject = {
+  name: string;
+  sections: ExamDataSection[];
+  [key: string]: any;
+};
+
+type ExamData = {
+  subjects: ExamDataSubject[];
+  [key: string]: any;
+};
+
+// For section handling in the subject.sections.forEach callback
+type Section = {
+  type: string;
+  questions: ExamDataQuestion[];
+  [key: string]: any;
+};
+
+// For question handling in the section.questions.forEach callback
+type QuestionData = {
+  question: string | any;
+  options: Array<string | ExamDataOption>;
+  [key: string]: any;
+};
+
+// For timers used in the component
+type TimerType = NodeJS.Timeout;
+
+// For the section time statistics state
+type SectionTimeStat = {
+  name: string;
+  timeSpent: number;
+  percentage: number;
+  answeredQuestions: number;
+  totalQuestions: number;
+};
+
+// For tracking which question is active in the timer effect
+type QuestionTimerState = {
+  questionId: number;
+  timer: NodeJS.Timeout;
+};
 type Question = {
   id: number;
   text: string;
@@ -72,27 +143,29 @@ type Question = {
   selectedOption?: number;
   timeSpent: number; // Time spent on this question in seconds
 };
-type ExamSubmission = {
-  examId: string;
-  studentName: string;
-  studentEmail: string;
+interface ExamSubmission {
+  paperId: string | string[];
+  examId: string | undefined;
   submittedAt: string;
   startTime: string;
   timeSpent: number;
+
   answers: Array<{
     questionId: string;
     numericId: number;
     section: string;
-    selectedOption?: number;
+    selectedOption: number | undefined;
     status: QuestionStatus;
     timeSpent: number;
   }>;
+
   sectionStats: Array<{
     name: string;
     timeSpent: number;
     questionsAnswered: number;
     questionsTotal: number;
   }>;
+
   summary: {
     totalQuestions: number;
     answered: number;
@@ -102,7 +175,7 @@ type ExamSubmission = {
     markedReviewAnswered: number;
     guessed: number;
   };
-};
+}
 
 type QuestionPaperSection = {
   name: string;
@@ -413,6 +486,7 @@ const ExamInterface = () => {
 
     // Create the submission object
     const submission = {
+      paperId: id,
       examId: examId, // Use the exam ID from your API response
       submittedAt: new Date().toISOString(),
       startTime: new Date(Date.now() - (10800 - timeLeft) * 1000).toISOString(),

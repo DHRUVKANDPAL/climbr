@@ -1,7 +1,7 @@
 "use client";
 // MockExamForm.tsx
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation"; // Add this import at the top
+import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,7 +24,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Clock } from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
 import { api } from "@/trpc/react";
 
 // Define the schema for the form
@@ -163,9 +163,16 @@ export default function MockExamForm() {
             <Button
               type="submit"
               className="w-full bg-blue-600 py-6 text-lg font-medium transition-colors hover:bg-blue-700"
-              disabled={submitForm.isLoading}
+              disabled={submitForm.isPending}
             >
-              {submitForm.isLoading ? "Creating..." : "Create Exam Paper"}
+              {submitForm.isPending ? (
+                <span className="flex items-center justify-center">
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Creating your paper...
+                </span>
+              ) : (
+                "Create Exam Paper"
+              )}
             </Button>
           </form>
         </Form>
