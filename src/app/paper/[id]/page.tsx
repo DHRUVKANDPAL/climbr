@@ -529,7 +529,13 @@ const ExamInterface = () => {
 
     try {
       console.log("Submitting exam data:", submission);
-      submit.mutate(submission);
+      submit.mutate(submission,{
+        onSuccess: (data) => {
+          console.log("Exam submitted successfully:", data);
+          alert("Exam submitted successfully!");
+          window.location.href = `/result/${data.id}`; // Redirect to home page
+        }
+      });
       // Send data to your backend using tRPC
       // Create a matching mutation in your exam router
       // const result = await api.exam.submitExamResults.mutate(submission);

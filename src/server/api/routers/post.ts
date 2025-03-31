@@ -581,6 +581,7 @@ export const postRouter = createTRPCRouter({
       });
 
       console.log(result, "result");
+      return result;
 
     }),
     generateResult:protectedProdcedure.input(z.string()).query(async ({ctx,input})=>{
