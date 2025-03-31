@@ -45,6 +45,7 @@ import Leaderboard from "@/components/LeaderBoard";
 import DarkModeToggle from "@/components/DarkModeToggle";
 import Link from "next/link";
 import ExamFormDialog from "@/components/ExamFormDialog";
+import YouTubeRecommendations from "@/components/YoutubeRecommendations";
 
 const ProfileDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -1495,91 +1496,7 @@ const ProfileDashboard = () => {
             </Card>
 
             {/* Video Lectures */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Video Lectures</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-5 w-5 rounded-full bg-red-500"></div>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Advanced Calculus</h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          Prof. Rakesh Sharma • 12 lectures
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Progress: 8/12
-                      </div>
-                      <Button size="sm" variant="outline">
-                        Continue
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-5 w-5 rounded-full bg-red-500"></div>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Organic Chemistry</h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          Dr. Sneha Patel • 15 lectures
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Progress: 3/15
-                      </div>
-                      <Button size="sm" variant="outline">
-                        Continue
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="h-5 w-5 rounded-full bg-red-500"></div>
-                        </div>
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Electrodynamics</h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                          Prof. Amit Singh • 10 lectures
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                        Progress: 0/10
-                      </div>
-                      <Button size="sm" variant="outline">
-                        Start
-                      </Button>
-                    </div>
-                  </div>
-
-                  <Button className="w-full gap-2">
-                    Browse All Lectures
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <YouTubeRecommendations />
 
             {/* Question Bank */}
             <Card>
