@@ -160,6 +160,8 @@ const ExamInterface = () => {
   };
   useEffect(() => {
     if (examData) {
+      console.log("Complete exam details:", examData);
+
       const transformed: QuestionPaperSection[] = [];
       let globalQuestionId = 1;
 
@@ -406,14 +408,15 @@ const ExamInterface = () => {
     }
   };
   const submitExam = async () => {
-    // Create the submission object without localStorage references
-    const submission: ExamSubmission = {
-      examId: "jee_main_2025",
-      studentName: studentName || "Anonymous",
-      studentEmail: studentEmail || "anonymous@example.com",
+    // Get the exam ID from the fetched exam data instead of using a static string
+    const examId = examData?.subjects[0].sections[0].questions[0].examId;
+
+    // Create the submission object
+    const submission = {
+      examId: examId, // Use the exam ID from your API response
       submittedAt: new Date().toISOString(),
       startTime: new Date(Date.now() - (10800 - timeLeft) * 1000).toISOString(),
-      timeSpent: 10800 - timeLeft, // Total time spent
+      timeSpent: 10800 - timeLeft, // Total time spent in seconds
 
       // Process each question using allQuestions
       answers: allQuestions.map((question) => {
@@ -450,14 +453,15 @@ const ExamInterface = () => {
     };
 
     try {
-      // Show submission animation/message here
       console.log("Submitting exam data:", submission);
 
-      // Your existing submission logic...
+      // Send data to your backend using tRPC
+      // Create a matching mutation in your exam router
+      // const result = await api.exam.submitExamResults.mutate(submission);
 
-      // Just redirect after submission - no localStorage to clean up
-      alert("Exam submitted successfully!");
-      window.location.href = "/";
+      // Handle successful submission
+      // alert("Exam submitted successfully!");
+      // window.location.href = "/"; // Redirect to home page
     } catch (error) {
       console.error("Error submitting exam:", error);
       alert("Failed to submit exam. Please try again.");
