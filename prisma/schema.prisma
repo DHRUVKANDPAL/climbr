@@ -21,7 +21,11 @@ model Post {
 
 model User {
     id                String           @id @default(cuid())
-    name              String
+    firstName         String?
+    lastName          String?
+    imageUrl          String?
+    email             String           @unique
+
     swot              Swot? // one to one
     savedQuestions    SavedQuestion[]
     papers            Paper[]
@@ -32,8 +36,8 @@ model User {
     creditPoints      Int?             @default(0)
     leaderBoardPoints Int?             @default(0)
     PaperAnalytics    PaperAnalytics[]
-
-    @@index([name])
+    transactions       Transaction[]
+    isPremiumUser   Boolean? @default(false)
 }
 
 model FriendRequest {
@@ -75,6 +79,7 @@ model Question {
     subject          Subjects[]
     difficulty       DifficultyLevel     @default(Medium)
     explanation      String?
+    type Type @default(MCQ)
     questionAnalytic QuestionAnalytics[]
     topic            Topic[]
     options          Options[]
@@ -197,6 +202,10 @@ model paperQuestion {
     paper      Paper    @relation(fields: [paperId], references: [id])
 }
 
+
+
+
+
 model PaperQuestionAnalytics {
     id         String   @id @default(cuid())
     paperQuestionId String
@@ -220,6 +229,7 @@ model Paper {
     createdAt             DateTime        @default(now())
     updatedAt             DateTime        @updatedAt
     paperQuestion         paperQuestion?
+    submission Submission[]
     @@index([userId])
     @@index([examId])
     @@index([createdAt])
@@ -227,6 +237,57 @@ model Paper {
     @@index([name])
 }
 
+model Submission {
+    id         String   @id @default(cuid())
+    paperId    String
+    paper      Paper    @relation(fields: [paperId], references: [id])
+    submittedAt DateTime 
+    startTime DateTime
+    timeSpent Int
+    answer Answer[]
+    sectionStats SectionStats[]
+    summary summary?
+}
+
+
+
+model Answer{
+    id String @id @default(cuid())
+    questionId String
+    numericId Int
+    section String
+    selectedOptionId Int
+    status String
+    timeSpentInSec Int
+    submissionId String
+    submission Submission @relation(fields: [submissionId], references: [id])
+}
+
+
+
+model SectionStats{
+    id String @id @default(cuid())
+    name String
+    timeSpentInSec Int
+    questionAnswered Int
+    questionsTotal Int
+    submissionId String
+    submission Submission @relation(fields: [submissionId], references: [id])
+}
+
+
+model summary{
+    id String @id @default(cuid())
+    totalQuestions Int
+    answered Int
+    notAnswered Int
+    notVisited Int
+    markedForReview Int
+    markedReviewAnswered Int
+    guessed Int
+    submissionId String @unique
+    submission Submission @relation(fields: [submissionId], references: [id])
+}
 
 model PaperAnalytics {
     id                       String   @id @default(cuid())
@@ -264,4 +325,62 @@ model topicWiseAccuracy {
     totalQuestions       Int
 
     @@index([topicId])
+}
+
+
+
+model LanguageRooms{
+    roomId String @id
+    languages Languages[]
+}
+model Languages{
+    id String @id @default(cuid())
+    name String 
+    languageRoomId String 
+    languageRoom LanguageRooms @relation(fields: [languageRoomId], references: [roomId], onDelete: Cascade)
+}
+
+model StudyRoom{
+    roomId String @id
+}
+
+model ConsultingRoom{
+    roomId String @id
+    label Label[]
+}
+
+model Label{
+    name String @unique
+    consultingRoomId String
+    consultingRoom ConsultingRoom @relation(fields: [consultingRoomId], references: [roomId])
+}
+
+model MentalHealthRoom{
+    roomId String @id
+}
+
+model Transaction {
+    id                String   @id @default(cuid())
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @updatedAt
+    userId            String
+    orderCreationId   String?
+    razorpayPaymentId String?
+    razorpayOrderId   String?
+    razorpaySignature String?
+    credits           Int
+    user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+
+model Report{
+    id String @id @default(cuid())
+    userId String
+    roomName String
+    reason String
+    description String?
+    severity Int?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }

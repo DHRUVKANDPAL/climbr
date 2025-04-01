@@ -1,11 +1,13 @@
 "use client";
 // ExamInterface.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import MarkdownQuestionDisplay from "@/components/MarkdownQuestionDisplay";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -48,6 +50,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import DarkModeToggle from "@/components/DarkModeToggle";
+import { api } from "@/trpc/react";
+import ExamLoader from "@/components/ExamLoader";
 
 // Types
 type QuestionStatus =
@@ -69,251 +73,341 @@ type Question = {
   timeSpent: number; // Time spent on this question in seconds
 };
 
+type ExamSubmission = {
+  examId: string;
+  studentName: string;
+  studentEmail: string;
+  submittedAt: string;
+  startTime: string;
+  timeSpent: number;
+  answers: Array<{
+    questionId: string;
+    numericId: number;
+    section: string;
+    selectedOption?: number;
+    status: QuestionStatus;
+    timeSpent: number;
+  }>;
+  sectionStats: Array<{
+    name: string;
+    timeSpent: number;
+    questionsAnswered: number;
+    questionsTotal: number;
+  }>;
+  summary: {
+    totalQuestions: number;
+    answered: number;
+    notAnswered: number;
+    notVisited: number;
+    markedReview: number;
+    markedReviewAnswered: number;
+    guessed: number;
+  };
+};
+
 type QuestionPaperSection = {
   name: string;
   questions: Question[];
 };
 
-// Sample data
-// Sample question data with markdown formatting
-const generateSampleData = (): QuestionPaperSection[] => {
-  const sections = ["Physics", "Chemistry", "Mathematics"];
-  const questionPaper: QuestionPaperSection[] = [];
-
-  // Physics Questions
-  const physicsQuestions: Question[] = [
-    {
-      id: 1,
-      text: "A ball is thrown horizontally from the top of a building with an initial velocity of $10 \\text{ m/s}$. If the height of the building is $45 \\text{ m}$, how far from the base of the building will the ball strike the ground? (Take $g = 10 \\text{ m/s}^2$)",
-      options: [
-        "A) $10 \\text{ m}$",
-        "B) $20 \\text{ m}$",
-        "C) $30 \\text{ m}$",
-        "D) $40 \\text{ m}$",
-      ],
-      section: "Physics",
-      status: "not-answered",
-      timeSpent: 0,
-    },
-    {
-      id: 2,
-      text: "The gravitational force between two masses $m_1$ and $m_2$ separated by a distance $r$ is given by $F = G\\frac{m_1 m_2}{r^2}$. If the masses are doubled and the distance between them is halved, the new force will be:",
-      options: [
-        "A) The same as before",
-        "B) 4 times the original force",
-        "C) 8 times the original force",
-        "D) 16 times the original force",
-      ],
-      section: "Physics",
-      status: "not-visited",
-      timeSpent: 0,
-    },
-    {
-      id: 3,
-      text: "According to Faraday's law of electromagnetic induction, the induced emf in a coil is directly proportional to:",
-      options: [
-        "A) The rate of change of magnetic field",
-        "B) The strength of the magnetic field only",
-        "C) The area of the coil only",
-        "D) The resistance of the coil",
-      ],
-      section: "Physics",
-      status: "not-visited",
-      timeSpent: 0,
-    },
-  ];
-
-  // Add more physics questions
-  for (let i = 4; i <= 30; i++) {
-    physicsQuestions.push({
-      id: i,
-      text: `This is physics question number ${i} with some **bold text** and *italics*. It might include an equation like $E = mc^2$ or a list:\n\n- Item 1\n- Item 2\n- Item 3`,
-      options: [
-        `A) Option with $\\sqrt{x^2 + y^2}$`,
-        `B) Option with **strong emphasis**`,
-        `C) Option with *italics emphasis*`,
-        `D) Regular option ${i}`,
-      ],
-      section: "Physics",
-      status: "not-visited",
-      timeSpent: 0,
-    });
-  }
-
-  // Chemistry Questions
-  const chemistryQuestions: Question[] = [
-    {
-      id: 31,
-      text: "Which of the following elements has the highest electronegativity?\n\n| Element | Symbol | Atomic Number |\n|---------|--------|---------------|\n| Fluorine | F | 9 |\n| Chlorine | Cl | 17 |\n| Oxygen | O | 8 |\n| Nitrogen | N | 7 |",
-      options: ["A) Fluorine", "B) Chlorine", "C) Oxygen", "D) Nitrogen"],
-      section: "Chemistry",
-      status: "not-visited",
-      timeSpent: 0,
-    },
-    {
-      id: 32,
-      text: "Which of the following molecules has a non-zero dipole moment?\n\n```\nH  H\n \\/\n  C\n / \\\nH   H\n```",
-      options: [
-        "A) CH₄ (Methane)",
-        "B) CCl₄ (Carbon tetrachloride)",
-        "C) CHCl₃ (Chloroform)",
-        "D) CO₂ (Carbon dioxide)",
-      ],
-      section: "Chemistry",
-      status: "not-visited",
-      timeSpent: 0,
-    },
-    {
-      id: 33,
-      text: "The equation $\\Delta G = \\Delta H - T\\Delta S$ represents which of the following thermodynamic principles?",
-      options: [
-        "A) First law of thermodynamics",
-        "B) Second law of thermodynamics",
-        "C) Gibbs free energy change",
-        "D) Enthalpy change",
-      ],
-      section: "Chemistry",
-      status: "not-visited",
-      timeSpent: 0,
-    },
-  ];
-
-  // Add more chemistry questions
-  for (let i = 34; i <= 60; i++) {
-    chemistryQuestions.push({
-      id: i,
-      text: `# Chemistry Question ${i}\n\n> This is chemistry question ${i} with a blockquote and some molecular formulas like H₂O and C₆H₁₂O₆.\n\nDoes the reaction of $\\text{A} + \\text{B} \\rightarrow \\text{C}$ follow first-order kinetics?`,
-      options: [
-        `A) Yes, with rate = k[A]`,
-        `B) Yes, with rate = k[A][B]`,
-        `C) No, it's zero-order`,
-        `D) Cannot be determined`,
-      ],
-      section: "Chemistry",
-      status: "not-visited",
-      timeSpent: 0,
-    });
-  }
-
-  // Mathematics Questions
-  const mathQuestions: Question[] = [
-    {
-      id: 61,
-      text: "Evaluate the following integral:\n\n$$\\int_{0}^{\\pi} \\sin^2(x) dx$$",
-      options: [
-        "A) $\\frac{\\pi}{4}$",
-        "B) $\\frac{\\pi}{2}$",
-        "C) $\\pi$",
-        "D) $2\\pi$",
-      ],
-      section: "Mathematics",
-      status: "not-visited",
-      timeSpent: 0,
-    },
-    {
-      id: 62,
-      text: "If $z = 2 + 3i$ and $w = 1 - 2i$, then the value of $\\frac{z}{w}$ is:",
-      options: [
-        "A) $-\\frac{1}{5} + \\frac{8}{5}i$",
-        "B) $\\frac{4}{5} + \\frac{7}{5}i$",
-        "C) $-\\frac{4}{5} + \\frac{7}{5}i$",
-        "D) $\\frac{1}{5} + \\frac{8}{5}i$",
-      ],
-      section: "Mathematics",
-      status: "not-visited",
-      timeSpent: 0,
-    },
-    {
-      id: 63,
-      text: "A bag contains 4 red balls and 6 blue balls. If 2 balls are drawn at random without replacement, the probability of getting exactly one red ball is:",
-      options: [
-        "A) $\\frac{4}{15}$",
-        "B) $\\frac{8}{15}$",
-        "C) $\\frac{12}{45}$",
-        "D) $\\frac{24}{45}$",
-      ],
-      section: "Mathematics",
-      status: "not-visited",
-      timeSpent: 0,
-    },
-  ];
-
-  // Add more math questions
-  for (let i = 64; i <= 90; i++) {
-    mathQuestions.push({
-      id: i,
-      text: `# Mathematics Question ${i}\n\nConsider the following equation:\n\n$$f(x) = \\begin{cases} 
-      x^2 & \\text{if } x \\leq 0 \\\\
-      2x + 1 & \\text{if } x > 0
-   \\end{cases}$$\n\nIs this function continuous at x = 0?`,
-      options: [
-        `A) Yes, because $\\lim_{x \\to 0^-} f(x) = \\lim_{x \\to 0^+} f(x) = f(0)$`,
-        `B) No, because $\\lim_{x \\to 0^-} f(x) \\neq \\lim_{x \\to 0^+} f(x)$`,
-        `C) No, because $f(0)$ is undefined`,
-        `D) Yes, because the domain of $f$ includes $x = 0$`,
-      ],
-      section: "Mathematics",
-      status: "not-visited",
-      timeSpent: 0,
-    });
-  }
-
-  // Assemble the question paper
-  questionPaper.push({
-    name: "Physics",
-    questions: physicsQuestions,
-  });
-
-  questionPaper.push({
-    name: "Chemistry",
-    questions: chemistryQuestions,
-  });
-
-  questionPaper.push({
-    name: "Mathematics",
-    questions: mathQuestions,
-  });
-
-  return questionPaper;
+const STORAGE_KEYS = {
+  EXAM_STATE: "examState",
+  CURRENT_SECTION: "currentSection",
+  CURRENT_QUESTION_ID: "currentQuestionId",
+  TIME_LEFT: "timeLeft",
+  EXAM_STARTED: "examStarted",
+  EXAM_START_TIME: "examStartTime",
+  STUDENT_NAME: "studentName",
+  STUDENT_EMAIL: "studentEmail",
 };
 
 const ExamInterface = () => {
-  const [questionPaper, setQuestionPaper] =
-    useState<QuestionPaperSection[]>(generateSampleData());
-  const [currentSection, setCurrentSection] = useState<string>("Physics");
+  const { data: examData, isLoading } = api.post.getAllPapers.useQuery(
+    "cm8vyx0j400019wa9nezb0q66",
+  );
+
+  // Initialize states without depending on localStorage during render
+  const [questionPaper, setQuestionPaper] = useState<QuestionPaperSection[]>(
+    [],
+  );
+  const [currentSection, setCurrentSection] = useState<string>("");
   const [currentQuestionId, setCurrentQuestionId] = useState<number>(1);
   const [timeLeft, setTimeLeft] = useState<number>(10800); // 3 hours in seconds
+  const [examStarted, setExamStarted] = useState<boolean>(false);
+  const [studentName, setStudentName] = useState<string>("");
+  const [studentEmail, setStudentEmail] = useState<string>("");
   const [activeTimer, setActiveTimer] = useState<NodeJS.Timeout | null>(null);
   const [showStats, setShowStats] = useState<boolean>(false);
   const [showSubmitDialog, setShowSubmitDialog] = useState<boolean>(false);
+  const [showStartDialog, setShowStartDialog] = useState<boolean>(true);
+  const [isClient, setIsClient] = useState<boolean>(false);
 
-  // Get the current question
-  const currentQuestion = questionPaper
-    .flatMap((section) => section.questions)
-    .find((q) => q.id === currentQuestionId);
+  // Set isClient to true on component mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-  // Calculate question stats
-  const allQuestions = questionPaper.flatMap((section) => section.questions);
-  const stats = {
-    total: allQuestions.length,
-    answered: allQuestions.filter((q) => q.status === "answered").length,
-    notAnswered: allQuestions.filter((q) => q.status === "not-answered").length,
-    notVisited: allQuestions.filter((q) => q.status === "not-visited").length,
-    markedReview: allQuestions.filter((q) => q.status === "marked-review")
-      .length,
-    markedReviewAnswered: allQuestions.filter(
-      (q) => q.status === "marked-review-answered",
-    ).length,
-    guessed: allQuestions.filter((q) => q.status === "guessed").length,
-    totalTimeSpent: allQuestions.reduce((acc, q) => acc + q.timeSpent, 0),
+  // Load saved state from localStorage after component mounts on the client
+  useEffect(() => {
+    if (isClient) {
+      const storedExamStarted =
+        localStorage.getItem(STORAGE_KEYS.EXAM_STARTED) === "true";
+      setExamStarted(storedExamStarted);
+      setShowStartDialog(!storedExamStarted);
+
+      if (storedExamStarted) {
+        // Load other saved state only if exam has started
+        const storedSection = localStorage.getItem(
+          STORAGE_KEYS.CURRENT_SECTION,
+        );
+        if (storedSection) setCurrentSection(storedSection);
+
+        const storedQuestionId = localStorage.getItem(
+          STORAGE_KEYS.CURRENT_QUESTION_ID,
+        );
+        if (storedQuestionId) setCurrentQuestionId(parseInt(storedQuestionId));
+
+        const storedTimeLeft = localStorage.getItem(STORAGE_KEYS.TIME_LEFT);
+        if (storedTimeLeft) setTimeLeft(parseInt(storedTimeLeft));
+
+        const storedName = localStorage.getItem(STORAGE_KEYS.STUDENT_NAME);
+        if (storedName) setStudentName(storedName);
+
+        const storedEmail = localStorage.getItem(STORAGE_KEYS.STUDENT_EMAIL);
+        if (storedEmail) setStudentEmail(storedEmail);
+      }
+    }
+  }, [isClient]);
+
+  // Log examination data structure for debugging
+  useEffect(() => {
+    if (examData && examData.subjects.length > 0) {
+      const firstSection = examData.subjects[0].sections.find(
+        (s) => s.type === "MCQ",
+      );
+      if (firstSection && firstSection.questions.length > 0) {
+        console.log(
+          "First question options format:",
+          firstSection.questions[0].options,
+        );
+
+        if (firstSection.questions[0].options.length > 0) {
+          console.log(
+            "First option structure:",
+            JSON.stringify(firstSection.questions[0].options[0], null, 2),
+          );
+        }
+      }
+    }
+  }, [examData]);
+
+  // Helper function to extract option text
+  const getOptionText = (option: any): string => {
+    if (typeof option === "object" && option !== null) {
+      if ("option" in option) return String(option.option || "");
+      if ("text" in option) return String(option.text || "");
+      if ("value" in option) return String(option.value || "");
+      return JSON.stringify(option);
+    }
+    return typeof option === "string" ? option : String(option || "");
   };
+
+  // Initialize question paper from examData or localStorage
+  useEffect(() => {
+    if (!isClient) return; // Skip this effect during SSR
+
+    // Try to load saved state from localStorage first
+    const storedExamState = localStorage.getItem(STORAGE_KEYS.EXAM_STATE);
+
+    if (storedExamState && examStarted) {
+      try {
+        const parsedState = JSON.parse(storedExamState);
+        setQuestionPaper(parsedState);
+        console.log("Loaded exam state from localStorage");
+        return; // Exit early as we've loaded from localStorage
+      } catch (error) {
+        console.error("Error parsing stored exam state:", error);
+        // Fall through to initialize from examData
+      }
+    }
+
+    // If no valid localStorage data, initialize from examData
+    if (examData) {
+      const transformed: QuestionPaperSection[] = [];
+      let globalQuestionId = 1;
+
+      // Convert the structured data into the format needed by the UI
+      examData.subjects.forEach((subject) => {
+        const questions: Question[] = [];
+
+        // Process all questions from this subject
+        subject.sections.forEach((section) => {
+          if (section.type === "MCQ") {
+            section.questions.forEach((q) => {
+              // Ensure question text is a string
+              const questionText =
+                typeof q.question === "string"
+                  ? q.question
+                  : String(q.question || "");
+
+              // Extract option text from options objects
+              const options = Array.isArray(q.options)
+                ? q.options.map(getOptionText)
+                : [];
+
+              questions.push({
+                id: globalQuestionId++,
+                text: questionText,
+                options: options,
+                section: subject.name,
+                status: "not-visited",
+                timeSpent: 0,
+              });
+            });
+          }
+        });
+
+        // Add this subject to the question paper if it has questions
+        if (questions.length > 0) {
+          transformed.push({
+            name: subject.name,
+            questions: questions,
+          });
+        }
+      });
+
+      setQuestionPaper(transformed);
+    }
+  }, [examData, examStarted, isClient]);
+
+  // Derived values using useMemo
+  const allQuestions = useMemo(() => {
+    return questionPaper.flatMap((section) => section.questions);
+  }, [questionPaper]);
+
+  const currentQuestion = useMemo(() => {
+    return allQuestions.find((q) => q.id === currentQuestionId);
+  }, [allQuestions, currentQuestionId]);
+
+  const stats = useMemo(() => {
+    return {
+      total: allQuestions.length,
+      answered: allQuestions.filter((q) => q.status === "answered").length,
+      notAnswered: allQuestions.filter((q) => q.status === "not-answered")
+        .length,
+      notVisited: allQuestions.filter((q) => q.status === "not-visited").length,
+      markedReview: allQuestions.filter((q) => q.status === "marked-review")
+        .length,
+      markedReviewAnswered: allQuestions.filter(
+        (q) => q.status === "marked-review-answered",
+      ).length,
+      guessed: allQuestions.filter((q) => q.status === "guessed").length,
+      totalTimeSpent: allQuestions.reduce((acc, q) => acc + q.timeSpent, 0),
+    };
+  }, [allQuestions]);
+
+  const sectionTimeStats = useMemo(() => {
+    return questionPaper.map((section) => {
+      const sectionQuestions = section.questions;
+      const sectionTimeSpent = sectionQuestions.reduce(
+        (acc, q) => acc + q.timeSpent,
+        0,
+      );
+      const sectionPercentage =
+        stats.totalTimeSpent > 0
+          ? Math.round((sectionTimeSpent / stats.totalTimeSpent) * 100)
+          : 0;
+
+      return {
+        name: section.name,
+        timeSpent: sectionTimeSpent,
+        percentage: sectionPercentage,
+        answeredQuestions: sectionQuestions.filter(
+          (q) =>
+            q.status === "answered" ||
+            q.status === "guessed" ||
+            q.status === "marked-review-answered",
+        ).length,
+        totalQuestions: sectionQuestions.length,
+      };
+    });
+  }, [questionPaper, stats.totalTimeSpent]);
+
+  const averageTimePerQuestion = useMemo(() => {
+    const answeredQuestions = allQuestions.filter(
+      (q) =>
+        q.status === "answered" ||
+        q.status === "guessed" ||
+        q.status === "marked-review-answered",
+    );
+
+    if (answeredQuestions.length === 0) return 0;
+
+    return Math.round(
+      answeredQuestions.reduce((acc, q) => acc + q.timeSpent, 0) /
+        answeredQuestions.length,
+    );
+  }, [allQuestions]);
+
+  // Save question paper state to localStorage
+  useEffect(() => {
+    if (isClient && examStarted && questionPaper.length > 0) {
+      localStorage.setItem(
+        STORAGE_KEYS.EXAM_STATE,
+        JSON.stringify(questionPaper),
+      );
+    }
+  }, [questionPaper, examStarted, isClient]);
+
+  // Save current section to localStorage
+  useEffect(() => {
+    if (isClient && examStarted && currentSection) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_SECTION, currentSection);
+    }
+  }, [currentSection, examStarted, isClient]);
+
+  // Save current question ID to localStorage
+  useEffect(() => {
+    if (isClient && examStarted) {
+      localStorage.setItem(
+        STORAGE_KEYS.CURRENT_QUESTION_ID,
+        currentQuestionId.toString(),
+      );
+    }
+  }, [currentQuestionId, examStarted, isClient]);
+
+  // Save time left to localStorage
+  useEffect(() => {
+    if (isClient && examStarted) {
+      localStorage.setItem(STORAGE_KEYS.TIME_LEFT, timeLeft.toString());
+    }
+  }, [timeLeft, examStarted, isClient]);
+
+  // Save exam started state to localStorage
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem(STORAGE_KEYS.EXAM_STARTED, examStarted.toString());
+    }
+  }, [examStarted, isClient]);
+
+  // Save student info to localStorage
+  useEffect(() => {
+    if (isClient && examStarted) {
+      localStorage.setItem(STORAGE_KEYS.STUDENT_NAME, studentName);
+      localStorage.setItem(STORAGE_KEYS.STUDENT_EMAIL, studentEmail);
+    }
+  }, [studentName, studentEmail, examStarted, isClient]);
 
   // Main timer effect
   useEffect(() => {
+    if (!isClient || !examStarted) return;
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 0) {
           clearInterval(timer);
+          // Auto-submit exam when time runs out
+          setShowSubmitDialog(true);
           return 0;
         }
         return prev - 1;
@@ -321,10 +415,12 @@ const ExamInterface = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [examStarted, isClient]);
 
   // Question-specific timer effect
   useEffect(() => {
+    if (!isClient || !examStarted) return;
+
     // Clear previous timer
     if (activeTimer) {
       clearInterval(activeTimer);
@@ -357,9 +453,21 @@ const ExamInterface = () => {
         clearInterval(timer);
       }
     };
-  }, [currentQuestionId]);
+  }, [currentQuestionId, examStarted, isClient]);
 
-  // Format time
+  // Set initial section when question paper is loaded
+  useEffect(() => {
+    if (questionPaper.length > 0 && !currentSection) {
+      const initialSection = questionPaper[0].name;
+      setCurrentSection(initialSection);
+
+      if (isClient) {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_SECTION, initialSection);
+      }
+    }
+  }, [questionPaper, currentSection, isClient]);
+
+  // Format time function
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -390,6 +498,113 @@ const ExamInterface = () => {
         };
       });
     });
+  };
+
+  // Start exam function
+  const startExam = () => {
+    const startTime = new Date().toISOString();
+
+    setExamStarted(true);
+    setShowStartDialog(false);
+
+    // Store exam start time
+    if (isClient) {
+      localStorage.setItem(STORAGE_KEYS.EXAM_START_TIME, startTime);
+      localStorage.setItem(STORAGE_KEYS.STUDENT_NAME, studentName);
+      localStorage.setItem(STORAGE_KEYS.STUDENT_EMAIL, studentEmail);
+      localStorage.setItem(STORAGE_KEYS.EXAM_STARTED, "true");
+    }
+
+    // Set initial section if not already set
+    if (!currentSection && questionPaper.length > 0) {
+      const initialSection = questionPaper[0].name;
+      setCurrentSection(initialSection);
+
+      if (isClient) {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_SECTION, initialSection);
+      }
+    }
+  };
+
+  // Submit exam function
+  const submitExam = async () => {
+    if (!isClient) return;
+
+    // Create the submission object
+    const submission: ExamSubmission = {
+      examId: "jee_main_2025",
+      studentName: studentName || "Anonymous",
+      studentEmail: studentEmail || "anonymous@example.com",
+      submittedAt: new Date().toISOString(),
+      startTime:
+        localStorage.getItem(STORAGE_KEYS.EXAM_START_TIME) ||
+        new Date(Date.now() - (10800 - timeLeft) * 1000).toISOString(),
+      timeSpent: 10800 - timeLeft, // Total time spent
+
+      // Process each question using allQuestions
+      answers: allQuestions.map((question) => {
+        return {
+          questionId: question.id.toString(),
+          numericId: question.id,
+          section: question.section,
+          selectedOption: question.selectedOption,
+          status: question.status,
+          timeSpent: question.timeSpent,
+        };
+      }),
+
+      // Process section statistics using sectionTimeStats
+      sectionStats: sectionTimeStats.map((sectionStat) => {
+        return {
+          name: sectionStat.name,
+          timeSpent: sectionStat.timeSpent,
+          questionsAnswered: sectionStat.answeredQuestions,
+          questionsTotal: sectionStat.totalQuestions,
+        };
+      }),
+
+      // Include summary statistics
+      summary: {
+        totalQuestions: stats.total,
+        answered: stats.answered,
+        notAnswered: stats.notAnswered,
+        notVisited: stats.notVisited,
+        markedReview: stats.markedReview,
+        markedReviewAnswered: stats.markedReviewAnswered,
+        guessed: stats.guessed,
+      },
+    };
+
+    try {
+      // Show submission animation/message here
+      console.log("Submitting exam data:", submission);
+      // Simulate an API call to submit the exam data
+      // const response = await fetch("/api/submit-exam", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(submission),
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error("Failed to submit exam data");
+      // }
+
+      // const result = await response.json();
+      // console.log("Exam submission result:", result);
+
+      // Clear all localStorage after successful submission
+      Object.values(STORAGE_KEYS).forEach((key) => {
+        localStorage.removeItem(key);
+      });
+
+      alert("Exam submitted successfully!");
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Error submitting exam:", error);
+      alert("Failed to submit exam. Please try again.");
+    }
   };
 
   // Handle changing question
@@ -476,7 +691,6 @@ const ExamInterface = () => {
   };
 
   // Guess and next
-  // Guess and next
   const guessAndNext = () => {
     if (!currentQuestion) return;
 
@@ -547,426 +761,504 @@ const ExamInterface = () => {
     }
   };
 
-  // Get average time per question
-  const getAverageTimePerQuestion = () => {
-    const answeredQuestions = allQuestions.filter(
-      (q) =>
-        q.status === "answered" ||
-        q.status === "guessed" ||
-        q.status === "marked-review-answered",
-    );
-    if (answeredQuestions.length === 0) return 0;
-    return Math.round(
-      answeredQuestions.reduce((acc, q) => acc + q.timeSpent, 0) /
-        answeredQuestions.length,
-    );
-  };
+  // If we're still in the server-rendering phase or loading, return a minimal UI
+  if (!isClient || isLoading) {
+    return <ExamLoader />;
+  }
 
   return (
-    <div className="flex h-screen flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      {/* Top Bar */}
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold">Mock Test: JEE Main 2025</h1>
-          <Badge className="bg-blue-600 dark:bg-blue-700">Online Exam</Badge>
-        </div>
-        <div className="flex items-center gap-3">
-          <DarkModeToggle />
-
-          <div className="flex items-center gap-2 rounded-md bg-zinc-100 px-4 py-2 shadow-sm dark:bg-zinc-800">
-            <Clock className="h-5 w-5 text-red-500 dark:text-red-400" />
-            <span className="text-lg font-bold">{formatTime(timeLeft)}</span>
-          </div>
-
-          <Button
-            variant="outline"
-            onClick={() => setShowStats(!showStats)}
-            className="transition-all hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-          >
-            {showStats ? (
-              <List className="mr-2 h-4 w-4" />
-            ) : (
-              <BarChart className="mr-2 h-4 w-4" />
-            )}
-            {showStats ? "Question View" : "Statistics"}
-          </Button>
-
-          <Button
-            variant="destructive"
-            onClick={() => setShowSubmitDialog(true)}
-            className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
-          >
-            Submit Test
-          </Button>
-
-          <Dialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Submit Test</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to submit your test? This action cannot
-                  be undone.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="mt-4 space-y-4">
-                <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-900">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-green-500 dark:bg-green-600">
-                        {stats.answered}
-                      </Badge>
-                      <span>Answered</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-red-500 dark:bg-red-600">
-                        {stats.notAnswered + stats.notVisited}
-                      </Badge>
-                      <span>Unanswered</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-purple-500 dark:bg-purple-600">
-                        {stats.markedReview + stats.markedReviewAnswered}
-                      </Badge>
-                      <span>Marked for Review</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-amber-500 dark:bg-amber-600">
-                        {stats.guessed}
-                      </Badge>
-                      <span>Guessed</span>
-                    </div>
-                  </div>
-                </div>
-
-                <DialogFooter className="flex justify-end gap-2 sm:justify-end">
-                  <Button variant="outline">Cancel</Button>
-                  <Button variant="destructive">Submit Test</Button>
-                </DialogFooter>
+    <div
+      className="flex h-screen flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"
+      suppressHydrationWarning={true}
+    >
+      {/* Start Exam Dialog */}
+      <Dialog open={showStartDialog} onOpenChange={setShowStartDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mock Test: JEE Main 2025</DialogTitle>
+            <DialogDescription>
+              Please enter your details to start the exam.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                placeholder="Enter your full name"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={studentEmail}
+                onChange={(e) => setStudentEmail(e.target.value)}
+              />
+            </div>
+            <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
+              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
+                <AlertCircle className="h-5 w-5" />
+                <h3 className="font-semibold">Important Instructions</h3>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+              <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-amber-700 dark:text-amber-300">
+                <li>This exam has a duration of 3 hours</li>
+                <li>Do not refresh the page during the exam</li>
+                <li>Each question carries equal marks</li>
+                <li>No negative marking for wrong answers</li>
+              </ul>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={startExam}
+              disabled={!studentName || !studentEmail}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600"
+            >
+              Start Exam
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Side - Question Display or Stats */}
-        {showStats ? (
-          <div className="flex w-2/3 flex-col overflow-auto border-r border-zinc-200 p-6 dark:border-zinc-800">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold">Performance Statistics</h2>
+      {/* Only render exam content if exam has started */}
+      {examStarted && (
+        <>
+          {" "}
+          {/* Top Bar */}
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-bold">Mock Test: JEE Main 2025</h1>
+              <Badge className="bg-blue-600 dark:bg-blue-700">
+                Online Exam
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3">
+              <DarkModeToggle />
+
+              <div className="flex items-center gap-2 rounded-md bg-zinc-100 px-4 py-2 shadow-sm dark:bg-zinc-800">
+                <Clock className="h-5 w-5 text-red-500 dark:text-red-400" />
+                <span className="text-lg font-bold">
+                  {formatTime(timeLeft)}
+                </span>
+              </div>
+
               <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowStats(false)}
-                className="rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                variant="outline"
+                onClick={() => setShowStats(!showStats)}
+                className="transition-all hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
               >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-6">
-              <Card className="border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                <CardContent className="pt-6">
-                  <h3 className="mb-4 text-lg font-semibold">Time Analysis</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Total Time Spent
-                      </p>
-                      <p className="text-2xl font-bold">
-                        {formatTime(stats.totalTimeSpent)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Average Time Per Question
-                      </p>
-                      <p className="text-2xl font-bold">
-                        {formatTime(getAverageTimePerQuestion())}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                        Time Remaining
-                      </p>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {formatTime(timeLeft)}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                <CardContent className="pt-6">
-                  <h3 className="mb-4 text-lg font-semibold">
-                    Question Status
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-green-500 dark:bg-green-600"></div>
-                        <span>Answered</span>
-                      </div>
-                      <span className="font-semibold">{stats.answered}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-red-500 dark:bg-red-600"></div>
-                        <span>Not Answered</span>
-                      </div>
-                      <span className="font-semibold">{stats.notAnswered}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-zinc-400 dark:bg-zinc-500"></div>
-                        <span>Not Visited</span>
-                      </div>
-                      <span className="font-semibold">{stats.notVisited}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-amber-500 dark:bg-amber-600"></div>
-                        <span>Guessed</span>
-                      </div>
-                      <span className="font-semibold">{stats.guessed}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-purple-500 dark:bg-purple-600"></div>
-                        <span>Marked for Review</span>
-                      </div>
-                      <span className="font-semibold">
-                        {stats.markedReview + stats.markedReviewAnswered}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="col-span-2 border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-                <CardContent className="pt-6">
-                  <h3 className="mb-4 text-lg font-semibold">
-                    Time Spent by Section
-                  </h3>
-                  <div className="space-y-4">
-                    {questionPaper.map((section) => {
-                      const sectionTimeSpent = section.questions.reduce(
-                        (acc, q) => acc + q.timeSpent,
-                        0,
-                      );
-                      const sectionPercentage =
-                        Math.round(
-                          (sectionTimeSpent / stats.totalTimeSpent) * 100,
-                        ) || 0;
-
-                      return (
-                        <div key={section.name} className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{section.name}</span>
-                            <span>
-                              {formatTime(sectionTimeSpent)} (
-                              {sectionPercentage}%)
-                            </span>
-                          </div>
-                          <Progress
-                            value={sectionPercentage}
-                            className="h-2 bg-zinc-200 dark:bg-zinc-700"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        ) : (
-          <div className="flex w-2/3 flex-col overflow-auto border-r border-zinc-200 p-6 dark:border-zinc-800">
-            {currentQuestion && (
-              <>
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-semibold">
-                      Question {currentQuestionId}{" "}
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        ({currentQuestion.section})
-                      </span>
-                    </h2>
-                    <Badge className={getStatusColor(currentQuestion.status)}>
-                      {currentQuestion.status
-                        .replace(/-/g, " ")
-                        .replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                      Time spent:
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className="border-zinc-300 bg-transparent text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
-                    >
-                      <Clock className="mr-1 h-3 w-3 text-amber-500 dark:text-amber-400" />
-                      {formatTime(currentQuestion.timeSpent)}
-                    </Badge>
-                  </div>
-                </div>
-
-                <MarkdownQuestionDisplay
-                  question={currentQuestion}
-                  onSelectOption={selectOption}
-                />
-
-                <div className="flex flex-wrap justify-between gap-2">
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={goToPrevQuestion}
-                      disabled={currentQuestionId <= 1}
-                      className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                    >
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      Previous
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      onClick={goToNextQuestion}
-                      disabled={currentQuestionId >= stats.total}
-                      className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                    >
-                      Next
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={clearResponse}
-                      disabled={currentQuestion.selectedOption === undefined}
-                      className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-                    >
-                      <RotateCcw className="mr-2 h-4 w-4" />
-                      Clear
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      onClick={toggleMarkForReview}
-                      className={`rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
-                        currentQuestion.status.includes("marked-review")
-                          ? "text-purple-600 dark:text-purple-400"
-                          : ""
-                      }`}
-                    >
-                      <Flag className="mr-2 h-4 w-4" />
-                      {currentQuestion.status.includes("marked-review")
-                        ? "Unmark"
-                        : "Mark for Review"}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      onClick={guessAndNext}
-                      disabled={currentQuestion.selectedOption === undefined}
-                      className="rounded-full border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
-                    >
-                      <LightbulbIcon className="mr-2 h-4 w-4" />
-                      Mark as Guessed
-                    </Button>
-
-                    <Button
-                      variant="default"
-                      onClick={goToNextQuestion}
-                      disabled={currentQuestionId >= stats.total}
-                      className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800"
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      Save & Next
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Right Side - Question Palette and Status */}
-        <div className="flex w-1/3 flex-col overflow-hidden border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-          {/* Compact Status Section */}
-          <div className="border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-3 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
-            <div className="flex items-center justify-between">
-              <h2 className="flex items-center gap-1.5 text-base font-bold">
-                <ClipboardCheck className="h-4 w-4 text-blue-500 dark:text-blue-400" />
-                Test Summary
-              </h2>
-
-              {/* Progress Badge */}
-              <div className="flex items-center gap-2 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
-                {Math.round(
-                  ((stats.answered +
-                    stats.guessed +
-                    stats.markedReviewAnswered) /
-                    stats.total) *
-                    100,
+                {showStats ? (
+                  <List className="mr-2 h-4 w-4" />
+                ) : (
+                  <BarChart className="mr-2 h-4 w-4" />
                 )}
-                % Complete
-              </div>
-            </div>
+                {showStats ? "Question View" : "Statistics"}
+              </Button>
 
-            {/* Compact stat cards in a single row */}
-            <div className="mt-3 flex gap-2">
-              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Answered
-                  </span>
-                </div>
-                <span className="font-semibold">{stats.answered}</span>
-              </div>
-              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-1.5 w-1.5 rounded-full bg-red-500"></div>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Not Answered
-                  </span>
-                </div>
-                <span className="font-semibold">{stats.notAnswered}</span>
-              </div>
-              <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
-                <div className="flex items-center gap-1.5">
-                  <div className="h-1.5 w-1.5 rounded-full bg-zinc-500"></div>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Not Visited
-                  </span>
-                </div>
-                <span className="font-semibold">{stats.notVisited}</span>
-              </div>
-            </div>
+              <Button
+                variant="destructive"
+                onClick={() => setShowSubmitDialog(true)}
+                className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
+              >
+                Submit Test
+              </Button>
 
-            {/* Mini status pills */}
-            <div className="mt-2 flex gap-2 overflow-x-auto pb-1 text-xs">
-              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
-                <Flag className="h-3 w-3 text-purple-500" />
-                <span>{stats.markedReview} Marked</span>
-              </div>
-              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
-                <HelpCircle className="h-3 w-3 text-blue-500" />
-                <span>{stats.markedReviewAnswered} Marked & Answered</span>
-              </div>
-              <div className="flex items-center gap-1 rounded-full bg-white px-2 py-0.5 whitespace-nowrap shadow-sm dark:bg-zinc-800">
-                <LightbulbIcon className="h-3 w-3 text-amber-500" />
-                <span>{stats.guessed} Guessed</span>
-              </div>
+              <Dialog
+                open={showSubmitDialog}
+                onOpenChange={setShowSubmitDialog}
+              >
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Submit Test</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to submit your test? This action
+                      cannot be undone.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="mt-4 space-y-4">
+                    <div className="rounded-lg bg-zinc-50 p-4 dark:bg-zinc-900">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-500 dark:bg-green-600">
+                            {stats.answered}
+                          </Badge>
+                          <span>Answered</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-red-500 dark:bg-red-600">
+                            {stats.notAnswered + stats.notVisited}
+                          </Badge>
+                          <span>Unanswered</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-purple-500 dark:bg-purple-600">
+                            {stats.markedReview + stats.markedReviewAnswered}
+                          </Badge>
+                          <span>Marked for Review</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-amber-500 dark:bg-amber-600">
+                            {stats.guessed}
+                          </Badge>
+                          <span>Guessed</span>
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter className="flex justify-end gap-2 sm:justify-end">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowSubmitDialog(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button variant="destructive" onClick={submitExam}>
+                        Submit Test
+                      </Button>
+                    </DialogFooter>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
+          </div>
+          {/* Main Content */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left Side - Question Display or Stats */}
+            {showStats ? (
+              <div className="flex w-2/3 flex-col overflow-auto border-r border-zinc-200 p-6 dark:border-zinc-800">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">Performance Statistics</h2>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowStats(false)}
+                    className="rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
 
-            {/* Slim progress bar */}
-            {/* <div className="mt-2">
+                <div className="grid grid-cols-2 gap-6">
+                  <Card className="border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <CardContent className="pt-6">
+                      <h3 className="mb-4 text-lg font-semibold">
+                        Time Analysis
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            Total Time Spent
+                          </p>
+                          <p className="text-2xl font-bold">
+                            {formatTime(stats.totalTimeSpent)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            Average Time Per Question
+                          </p>
+                          <p className="text-2xl font-bold">
+                            {formatTime(averageTimePerQuestion)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                            Time Remaining
+                          </p>
+                          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                            {formatTime(timeLeft)}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <CardContent className="pt-6">
+                      <h3 className="mb-4 text-lg font-semibold">
+                        Question Status
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-green-500 dark:bg-green-600"></div>
+                            <span>Answered</span>
+                          </div>
+                          <span className="font-semibold">
+                            {stats.answered}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-red-500 dark:bg-red-600"></div>
+                            <span>Not Answered</span>
+                          </div>
+                          <span className="font-semibold">
+                            {stats.notAnswered}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-zinc-400 dark:bg-zinc-500"></div>
+                            <span>Not Visited</span>
+                          </div>
+                          <span className="font-semibold">
+                            {stats.notVisited}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-amber-500 dark:bg-amber-600"></div>
+                            <span>Guessed</span>
+                          </div>
+                          <span className="font-semibold">{stats.guessed}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-3 w-3 rounded-full bg-purple-500 dark:bg-purple-600"></div>
+                            <span>Marked for Review</span>
+                          </div>
+                          <span className="font-semibold">
+                            {stats.markedReview + stats.markedReviewAnswered}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="col-span-2 border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                    <CardContent className="pt-6">
+                      <h3 className="mb-4 text-lg font-semibold">
+                        Time Spent by Section
+                      </h3>
+                      <div className="space-y-4">
+                        {/* Use the memoized sectionTimeStats directly */}
+                        {sectionTimeStats.map((sectionStat) => (
+                          <div key={sectionStat.name} className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">
+                                {sectionStat.name}
+                              </span>
+                              <span>
+                                {formatTime(sectionStat.timeSpent)} (
+                                {sectionStat.percentage}%)
+                              </span>
+                            </div>
+                            <Progress
+                              value={sectionStat.percentage}
+                              className="h-2 bg-zinc-200 dark:bg-zinc-700"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            ) : (
+              <div className="flex w-2/3 flex-col overflow-auto border-r border-zinc-200 p-6 dark:border-zinc-800">
+                {currentQuestion && (
+                  <>
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-semibold">
+                          Question {currentQuestionId}{" "}
+                          <span className="text-zinc-500 dark:text-zinc-400">
+                            ({currentQuestion.section})
+                          </span>
+                        </h2>
+                        <Badge
+                          className={getStatusColor(currentQuestion.status)}
+                        >
+                          {currentQuestion.status
+                            .replace(/-/g, " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                          Time spent:
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className="border-zinc-300 bg-transparent text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
+                        >
+                          <Clock className="mr-1 h-3 w-3 text-amber-500 dark:text-amber-400" />
+                          {formatTime(currentQuestion.timeSpent)}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Add proper checks and conversions */}
+                    <MarkdownQuestionDisplay
+                      question={{
+                        text:
+                          typeof currentQuestion.text === "string"
+                            ? currentQuestion.text
+                            : String(currentQuestion.text || ""),
+                        options: Array.isArray(currentQuestion.options)
+                          ? currentQuestion.options.map(getOptionText)
+                          : [],
+                        selectedOption: currentQuestion.selectedOption,
+                      }}
+                      onSelectOption={selectOption}
+                    />
+
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={goToPrevQuestion}
+                          disabled={currentQuestionId <= 1}
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          <ArrowLeft className="mr-2 h-4 w-4" />
+                          Previous
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={goToNextQuestion}
+                          disabled={currentQuestionId >= stats.total}
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          Next
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={clearResponse}
+                          disabled={
+                            currentQuestion.selectedOption === undefined
+                          }
+                          className="rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                        >
+                          <RotateCcw className="mr-2 h-4 w-4" />
+                          Clear
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={toggleMarkForReview}
+                          className={`rounded-full border-zinc-300 bg-white hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800 ${
+                            currentQuestion.status.includes("marked-review")
+                              ? "text-purple-600 dark:text-purple-400"
+                              : ""
+                          }`}
+                        >
+                          <Flag className="mr-2 h-4 w-4" />
+                          {currentQuestion.status.includes("marked-review")
+                            ? "Unmark"
+                            : "Mark for Review"}
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          onClick={guessAndNext}
+                          disabled={
+                            currentQuestion.selectedOption === undefined
+                          }
+                          className="rounded-full border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                        >
+                          <LightbulbIcon className="mr-2 h-4 w-4" />
+                          Mark as Guessed
+                        </Button>
+
+                        <Button
+                          variant="default"
+                          onClick={goToNextQuestion}
+                          disabled={currentQuestionId >= stats.total}
+                          className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-700 dark:hover:from-blue-800 dark:hover:to-indigo-800"
+                        >
+                          <Save className="mr-2 h-4 w-4" />
+                          Save & Next
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Right Side - Question Palette and Status */}
+            <div className="flex w-1/3 flex-col overflow-hidden border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
+              {/* Compact Status Section */}
+              <div className="border-b border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-3 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
+                <div className="flex items-center justify-between">
+                  <h2 className="flex items-center gap-1.5 text-base font-bold">
+                    <ClipboardCheck className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                    Test Summary
+                  </h2>
+
+                  {/* Progress Badge */}
+                  <div className="flex items-center gap-2 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+                    {Math.round(
+                      ((stats.answered +
+                        stats.guessed +
+                        stats.markedReviewAnswered) /
+                        stats.total) *
+                        100,
+                    )}
+                    % Complete
+                  </div>
+                </div>
+
+                {/* Compact stat cards in a single row */}
+                <div className="mt-3 flex gap-2">
+                  <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Answered
+                      </span>
+                    </div>
+                    <span className="font-semibold">{stats.answered}</span>
+                  </div>
+                  <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1.5 w-1.5 rounded-full bg-red-500"></div>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Not Answered
+                      </span>
+                    </div>
+                    <span className="font-semibold">{stats.notAnswered}</span>
+                  </div>
+                  <div className="flex flex-1 flex-col rounded-lg bg-white px-2 py-1.5 shadow-sm dark:bg-zinc-800">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1.5 w-1.5 rounded-full bg-zinc-500"></div>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        Not Visited
+                      </span>
+                    </div>
+                    <span className="font-semibold">{stats.notVisited}</span>
+                  </div>
+                </div>
+
+                {/* Mini status pills */}
+                <div className="mt-4 flex gap-2 justify-between overflow-x-auto pb-1 text-sm">
+                  <div className="flex items-center gap-1 rounded-sm w-full bg-white px-4 py-2 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                    <Flag className="h-4 w-4 text-purple-500" />
+                    <span>{stats.markedReview} Marked</span>
+                  </div>
+                  <div className="flex items-center gap-1 rounded-sm w-full bg-white px-4 py-2 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                    <HelpCircle className="h-4 w-4 text-blue-500" />
+                    <span>{stats.markedReviewAnswered} Marked & Answered</span>
+                  </div>
+                  <div className="flex items-center gap-1 rounded-sm w-full bg-white px-4 py-2 whitespace-nowrap shadow-sm dark:bg-zinc-800">
+                    <LightbulbIcon className="h-4 w-4 text-amber-500" />
+                    <span>{stats.guessed} Guessed</span>
+                  </div>
+                </div>
+
+                {/* Slim progress bar */}
+                {/* <div className="mt-2">
               <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500 ease-in-out"
@@ -976,166 +1268,173 @@ const ExamInterface = () => {
                 ></div>
               </div>
             </div> */}
-          </div>
-
-          {/* Question Palette - Modern Redesign */}
-          <div className="flex-1 overflow-auto">
-            <Tabs
-              defaultValue={currentSection}
-              value={currentSection}
-              onValueChange={setCurrentSection}
-              className="h-full"
-            >
-              <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-950">
-                <div className="mb-2 flex flex-col items-start gap-2">
-                  <h2 className="flex items-center gap-1.5 text-sm font-semibold">
-                    <ListChecks className="h-4 w-4 text-blue-500 dark:text-blue-400" />
-                    Question Palette
-                  </h2>
-                  <div className="mb-3 grid grid-cols-3 gap-x-2 gap-y-1 text-xs">
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-sm bg-green-500"></div>
-                      <span>Answered</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-sm bg-red-500"></div>
-                      <span>Not Answered</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-sm bg-zinc-500"></div>
-                      <span>Not Visited</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-sm bg-purple-500"></div>
-                      <span>Marked</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-sm bg-yellow-500"></div>
-                      <span>Guessed</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-sm bg-blue-500"></div>
-                      <span>Marked and answered</span>
-                    </div>
-                  </div>
-                </div>
-
-                <TabsList className="w-full rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-800">
-                  {questionPaper.map((section) => (
-                    <TabsTrigger
-                      key={section.name}
-                      value={section.name}
-                      className="rounded-md py-1.5 text-xs transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-zinc-950"
-                    >
-                      {section.name}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
               </div>
 
-              {questionPaper.map((section) => (
-                <TabsContent
-                  key={section.name}
-                  value={section.name}
-                  className="m-0 h-full overflow-auto"
+              {/* Question Palette - Modern Redesign */}
+              <div className="flex-1 overflow-auto">
+                <Tabs
+                  defaultValue={currentSection}
+                  value={currentSection}
+                  onValueChange={setCurrentSection}
+                  className="h-full"
                 >
-                  <ScrollArea className="h-[calc(100vh-280px)]">
-                    <div className="p-3">
-                      {/* Compact legend for question statuses */}
-
-                      {/* Modern question grid with hover effects */}
-                      <div className="grid grid-cols-5 gap-2">
-                        {section.questions.map((question) => (
-                          <TooltipProvider key={question.id}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <button
-                                  className={`flex h-10 w-10 items-center justify-center rounded-lg font-medium shadow-sm transition-all hover:scale-105 hover:shadow ${getStatusColor(
-                                    question.status,
-                                  )} ${
-                                    currentQuestionId === question.id
-                                      ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-zinc-900"
-                                      : ""
-                                  }`}
-                                  onClick={() => changeQuestion(question.id)}
-                                >
-                                  {question.id - section.questions[0]!.id + 1}
-                                </button>
-                              </TooltipTrigger>
-                              <TooltipContent
-                                side="right"
-                                className="flex gap-2 rounded-lg border border-zinc-200 bg-white p-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
-                              >
-                                <div className="text-sm">
-                                  <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                                    Question {question.id}
-                                  </div>
-                                  <div className="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                    <Circle className="h-1.5 w-1.5 fill-current" />
-                                    {question.status
-                                      .replace(/-/g, " ")
-                                      .replace(/\b\w/g, (l) => l.toUpperCase())}
-                                  </div>
-                                  {question.timeSpent > 0 && (
-                                    <div className="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                      <Clock className="h-1.5 w-1.5" />
-                                      {formatTime(question.timeSpent)}
-                                    </div>
-                                  )}
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ))}
+                  <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white p-2 dark:border-zinc-800 dark:bg-zinc-950">
+                    <div className="mb-2 flex flex-col items-start gap-2">
+                      <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                        <ListChecks className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                        Question Palette
+                      </h2>
+                      <div className="mb-3 grid grid-cols-3 gap-x-2 gap-y-1 text-xs">
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-sm bg-green-500"></div>
+                          <span>Answered</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-sm bg-red-500"></div>
+                          <span>Not Answered</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-sm bg-zinc-500"></div>
+                          <span>Not Visited</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-sm bg-purple-500"></div>
+                          <span>Marked</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-sm bg-yellow-500"></div>
+                          <span>Guessed</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="h-2 w-2 rounded-sm bg-blue-500"></div>
+                          <span>Marked and answered</span>
+                        </div>
                       </div>
                     </div>
-                  </ScrollArea>
-                </TabsContent>
-              ))}
-            </Tabs>
-          </div>
 
-          {/* Question Navigation - Modernized */}
-          <div className="border-t border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-3 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="outline"
-                onClick={goToPrevQuestion}
-                disabled={currentQuestionId <= 1}
-                size="sm"
-                className="border-zinc-300 bg-white px-3 transition-all hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-              >
-                <ArrowLeft className="mr-1 h-3 w-3" />
-                Prev
-              </Button>
+                    <TabsList className="w-full rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-800">
+                      {questionPaper.map((section) => (
+                        <TabsTrigger
+                          key={section.name}
+                          value={section.name}
+                          className="rounded-md py-1.5 text-xs transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-zinc-950"
+                        >
+                          {section.name}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </div>
 
-              <div className="flex items-center gap-2">
-                <div className="flex items-center">
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-100">
-                    {currentQuestionId}
-                  </span>
-                  <span className="ml-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    of {stats.total}
-                  </span>
-                </div>
+                  {questionPaper.map((section) => (
+                    <TabsContent
+                      key={section.name}
+                      value={section.name}
+                      className="m-0 h-full overflow-auto"
+                    >
+                      <ScrollArea className="h-[calc(100vh-280px)]">
+                        <div className="p-3">
+                          {/* Compact legend for question statuses */}
+
+                          {/* Modern question grid with hover effects */}
+                          <div className="grid grid-cols-5 gap-2">
+                            {section.questions.map((question) => (
+                              <TooltipProvider key={question.id}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      className={`flex h-10 w-10 items-center justify-center rounded-lg font-medium shadow-sm transition-all hover:scale-105 hover:shadow ${getStatusColor(
+                                        question.status,
+                                      )} ${
+                                        currentQuestionId === question.id
+                                          ? "ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-zinc-900"
+                                          : ""
+                                      }`}
+                                      onClick={() =>
+                                        changeQuestion(question.id)
+                                      }
+                                    >
+                                      {question.id -
+                                        section.questions[0]!.id +
+                                        1}
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent
+                                    side="right"
+                                    className="flex gap-2 rounded-lg border border-zinc-200 bg-white p-2 shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                                  >
+                                    <div className="text-sm">
+                                      <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                                        Question {question.id}
+                                      </div>
+                                      <div className="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                        <Circle className="h-1.5 w-1.5 fill-current" />
+                                        {question.status
+                                          .replace(/-/g, " ")
+                                          .replace(/\b\w/g, (l) =>
+                                            l.toUpperCase(),
+                                          )}
+                                      </div>
+                                      {question.timeSpent > 0 && (
+                                        <div className="mt-0.5 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                          <Clock className="h-1.5 w-1.5" />
+                                          {formatTime(question.timeSpent)}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            ))}
+                          </div>
+                        </div>
+                      </ScrollArea>
+                    </TabsContent>
+                  ))}
+                </Tabs>
               </div>
 
-              <Button
-                variant="outline"
-                onClick={goToNextQuestion}
-                disabled={currentQuestionId >= stats.total}
-                size="sm"
-                className="border-zinc-300 bg-white px-3 transition-all hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-              >
-                Next
-                <ArrowRight className="ml-1 h-3 w-3" />
-              </Button>
+              {/* Question Navigation - Modernized */}
+              <div className="border-t border-zinc-200 bg-gradient-to-r from-zinc-50 to-zinc-100 p-3 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-900/70">
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={goToPrevQuestion}
+                    disabled={currentQuestionId <= 1}
+                    size="sm"
+                    className="border-zinc-300 bg-white px-3 transition-all hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  >
+                    <ArrowLeft className="mr-1 h-3 w-3" />
+                    Prev
+                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-100">
+                        {currentQuestionId}
+                      </span>
+                      <span className="ml-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        of {stats.total}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={goToNextQuestion}
+                    disabled={currentQuestionId >= stats.total}
+                    size="sm"
+                    className="border-zinc-300 bg-white px-3 transition-all hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  >
+                    Next
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };
-
 export default ExamInterface;
